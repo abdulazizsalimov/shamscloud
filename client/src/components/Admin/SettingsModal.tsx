@@ -143,20 +143,24 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>{t("admin.systemSettings")}</DialogTitle>
+      <DialogContent className="sm:max-w-[600px] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <DialogHeader className="border-b pb-4">
+          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">{t("admin.systemSettings")}</DialogTitle>
         </DialogHeader>
         
         <div className="flex mt-4">
           <Tabs value={activeTab} className="w-full flex">
             {/* Left sidebar with tabs */}
             <div className="w-1/3 pr-4 border-r">
-              <TabsList className="flex flex-col items-stretch h-auto">
+              <TabsList className="flex flex-col items-stretch h-auto bg-transparent">
                 <TabsTrigger
                   value="quota"
                   onClick={() => setActiveTab("quota")}
-                  className={`justify-start px-4 py-2 mb-1 ${activeTab === "quota" ? "bg-blue-100 dark:bg-blue-800" : ""}`}
+                  className={`justify-start px-4 py-2 mb-1 text-left ${
+                    activeTab === "quota" 
+                      ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" 
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
                 >
                   {t("admin.quotaSettings")}
                 </TabsTrigger>
@@ -174,11 +178,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       name="totalQuota"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("admin.totalSystemQuota")} (GB)</FormLabel>
+                          <FormLabel className="text-gray-900 dark:text-gray-100">{t("admin.totalSystemQuota")} (GB)</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" min="1" step="1" />
+                            <Input {...field} type="number" min="1" step="1" className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700" />
                           </FormControl>
-                          <FormDescription>
+                          <FormDescription className="text-gray-600 dark:text-gray-400">
                             {t("admin.totalQuotaDescription")}
                           </FormDescription>
                           <FormMessage />
@@ -191,13 +195,13 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       name="defaultQuota"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("admin.defaultUserQuota")}</FormLabel>
+                          <FormLabel className="text-gray-900 dark:text-gray-100">{t("admin.defaultUserQuota")}</FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
                                 <SelectValue placeholder={t("admin.selectQuota")} />
                               </SelectTrigger>
                             </FormControl>
@@ -209,7 +213,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                               <SelectItem value="100">100 GB</SelectItem>
                             </SelectContent>
                           </Select>
-                          <FormDescription>
+                          <FormDescription className="text-gray-600 dark:text-gray-400">
                             {t("admin.defaultQuotaDescription")}
                           </FormDescription>
                           <FormMessage />
@@ -218,15 +222,19 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     />
                     
                     {/* Display available space information */}
-                    <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
-                      <h3 className="font-medium mb-2">{t("admin.systemStorage")}</h3>
+                    <div className="p-4 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
+                      <h3 className="font-medium mb-2 text-gray-900 dark:text-white">{t("admin.systemStorage")}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         {t("admin.availableSpace")}: <span className="font-semibold">{availableSpace || "Loading..."}</span>
                       </p>
                     </div>
                     
                     <div className="flex justify-end pt-4">
-                      <Button type="submit" disabled={isLoading}>
+                      <Button 
+                        type="submit" 
+                        disabled={isLoading}
+                        className="bg-primary hover:bg-primary/90 text-white"
+                      >
                         {isLoading ? t("common.saving") : t("common.saveChanges")}
                       </Button>
                     </div>
