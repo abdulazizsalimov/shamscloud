@@ -112,7 +112,7 @@ export function FileList({
     navigator.clipboard.writeText(`https://shamscloud.app/shared/${file.id}`);
     toast({
       title: t("common.success"),
-      description: "Link copied to clipboard",
+      description: t("notifications.shareSuccess"),
     });
   };
 
@@ -207,13 +207,13 @@ export function FileList({
           <DialogHeader>
             <DialogTitle>{t("common.rename")}</DialogTitle>
             <DialogDescription>
-              Enter a new name for {fileToRename?.name}
+              {t("dashboard.enterNewName")} {fileToRename?.name}
             </DialogDescription>
           </DialogHeader>
           <Input
             value={newFileName}
             onChange={(e) => setNewFileName(e.target.value)}
-            placeholder="New name"
+            placeholder={t("common.newName")}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setFileToRename(null)}>
@@ -234,8 +234,8 @@ export function FileList({
             <AlertDialogTitle>{t("common.confirmDelete")}</AlertDialogTitle>
             <AlertDialogDescription>
               {fileToDelete?.isFolder
-                ? `This will delete the folder "${fileToDelete?.name}" and all its contents. This action cannot be undone.`
-                : `Are you sure you want to delete "${fileToDelete?.name}"? This action cannot be undone.`}
+                ? `${t("common.areYouSure")} "${fileToDelete?.name}"? ${t("common.thisActionCannotBeUndone")}`
+                : `${t("common.areYouSure")} "${fileToDelete?.name}"? ${t("common.thisActionCannotBeUndone")}`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

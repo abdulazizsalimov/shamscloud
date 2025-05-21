@@ -27,6 +27,7 @@ export const translations = {
       search: "Поиск",
       yes: "Да",
       no: "Нет",
+      newName: "Новое имя",
       accessibilitySettings: "Настройки доступности",
       language: "Язык",
       selectLanguage: "Выберите язык",
@@ -157,7 +158,8 @@ export const translations = {
       actions: "Действия",
       folder: "Папка",
       notAFolder: "Выбранный элемент не является папкой",
-      emptyFolder: "Эта папка пуста. Загрузите файлы или создайте новую папку."
+      emptyFolder: "Эта папка пуста. Загрузите файлы или создайте новую папку.",
+      enterNewName: "Введите новое имя для"
     },
     admin: {
       userManagement: "Управление пользователями",
@@ -211,6 +213,7 @@ export const translations = {
       search: "Search",
       yes: "Yes",
       no: "No",
+      newName: "New name",
       accessibilitySettings: "Accessibility Settings",
       language: "Language",
       selectLanguage: "Select Language",
@@ -341,7 +344,8 @@ export const translations = {
       actions: "Actions",
       folder: "Folder",
       notAFolder: "Selected item is not a folder",
-      emptyFolder: "This folder is empty. Upload files or create a new folder."
+      emptyFolder: "This folder is empty. Upload files or create a new folder.",
+      enterNewName: "Enter a new name for"
     },
     admin: {
       userManagement: "User Management",
