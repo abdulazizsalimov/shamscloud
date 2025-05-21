@@ -68,16 +68,28 @@ export function setupFiles(app: Express, storageService: IStorage) {
       
       let files;
       
-      if (search) {
-        files = await storageService.searchFiles(userId, search, parentId);
-      } else {
-        files = await storageService.getFilesByParentId(parentId, userId);
+      try {
+        if (search) {
+          files = await storageService.searchFiles(userId, search, parentId);
+        } else {
+          files = await storageService.getFilesByParentId(parentId, userId);
+        }
+        
+        res.json(files);
+      } catch (error) {
+        // Если ошибка связана с отсутствием прав доступа
+        if (error instanceof Error && error.message.includes("permission")) {
+          return res.status(403).json({ message: error.message });
+        }
+        throw error; // Пробрасываем ошибку дальше
       }
-      
-      res.json(files);
     } catch (error) {
       console.error("Get files error:", error);
-      res.status(500).json({ message: "An error occurred while fetching files" });
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message || "An error occurred while fetching files" });
+      } else {
+        res.status(500).json({ message: "An error occurred while fetching files" });
+      }
     }
   });
 
@@ -95,12 +107,18 @@ export function setupFiles(app: Express, storageService: IStorage) {
       
       // Check if file belongs to user
       if (file.userId !== userId) {
+        console.error(`Security issue: User ${userId} tried to access file ${fileId} owned by ${file.userId}`);
         return res.status(403).json({ message: "You don't have permission to access this file" });
       }
       
       res.json(file);
     } catch (error) {
       console.error("Get file error:", error);
+      
+      if (error instanceof Error && error.message.includes("permission")) {
+        return res.status(403).json({ message: error.message });
+      }
+      
       res.status(500).json({ message: "An error occurred while fetching file" });
     }
   });

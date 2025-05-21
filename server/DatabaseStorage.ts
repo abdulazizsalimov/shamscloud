@@ -21,7 +21,20 @@ export class DatabaseStorage implements IStorage {
 
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    if (!user) return undefined;
+    
+    // Преобразуем поля из snake_case в camelCase для соответствия типу User
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      password: user.password,
+      role: user.role,
+      quota: user.quota,
+      usedSpace: user.used_space,
+      isBlocked: user.is_blocked,
+      createdAt: user.created_at
+    };
   }
 
   async getUserById(id: number): Promise<User | undefined> {
@@ -30,7 +43,20 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
+    if (!user) return undefined;
+    
+    // Преобразуем поля из snake_case в camelCase для соответствия типу User
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      password: user.password,
+      role: user.role,
+      quota: user.quota,
+      usedSpace: user.used_space,
+      isBlocked: user.is_blocked,
+      createdAt: user.created_at
+    };
   }
 
   async createUser(userData: InsertUser): Promise<User> {
@@ -183,7 +209,22 @@ export class DatabaseStorage implements IStorage {
 
   async getFile(id: number): Promise<File | undefined> {
     const [file] = await db.select().from(files).where(eq(files.id, id));
-    return file;
+    
+    if (!file) return undefined;
+    
+    // Преобразуем поля из snake_case в camelCase для соответствия типу File
+    return {
+      id: file.id,
+      name: file.name,
+      path: file.path,
+      type: file.type,
+      size: file.size,
+      isFolder: file.is_folder,
+      parentId: file.parent_id,
+      userId: file.user_id,
+      createdAt: file.created_at,
+      updatedAt: file.updated_at
+    };
   }
 
   async getFilesByParentId(parentId: number | null, userId: number): Promise<File[]> {
@@ -194,43 +235,87 @@ export class DatabaseStorage implements IStorage {
       result = await db.execute(sql`
         SELECT * FROM files
         WHERE user_id = ${userId} AND parent_id IS NULL
+        ORDER BY is_folder DESC, name ASC
       `);
     } else {
       // Для заданной директории
+      // Сначала проверяем, принадлежит ли родительская папка текущему пользователю
+      const parentFolder = await this.getFile(parentId);
+      if (!parentFolder || parentFolder.userId !== userId) {
+        throw new Error("You don't have permission to access this folder");
+      }
+      
       result = await db.execute(sql`
         SELECT * FROM files
         WHERE user_id = ${userId} AND parent_id = ${parentId}
+        ORDER BY is_folder DESC, name ASC
       `);
     }
     
-    return result.rows as File[];
+    // Преобразуем поля из snake_case в camelCase для соответствия типу File
+    return (result.rows || []).map(file => ({
+      id: file.id,
+      name: file.name,
+      path: file.path,
+      type: file.type,
+      size: file.size,
+      isFolder: file.is_folder,
+      parentId: file.parent_id,
+      userId: file.user_id,
+      createdAt: file.created_at,
+      updatedAt: file.updated_at
+    }));
   }
 
   async searchFiles(userId: number, query: string, parentId?: number | null): Promise<File[]> {
     let sqlQuery;
+    
+    // Если задан конкретный parentId, проверяем, принадлежит ли папка пользователю
+    if (parentId !== undefined && parentId !== null) {
+      const parentFolder = await this.getFile(parentId);
+      if (!parentFolder || parentFolder.userId !== userId) {
+        throw new Error("You don't have permission to access this folder");
+      }
+    }
     
     if (parentId === undefined) {
       // Поиск по всем файлам пользователя
       sqlQuery = sql`
         SELECT * FROM files
         WHERE user_id = ${userId} AND name ILIKE ${`%${query}%`}
+        ORDER BY is_folder DESC, name ASC
       `;
     } else if (parentId === null) {
       // Поиск только в корневой директории
       sqlQuery = sql`
         SELECT * FROM files
         WHERE user_id = ${userId} AND name ILIKE ${`%${query}%`} AND parent_id IS NULL
+        ORDER BY is_folder DESC, name ASC
       `;
     } else {
       // Поиск в конкретной директории
       sqlQuery = sql`
         SELECT * FROM files
         WHERE user_id = ${userId} AND name ILIKE ${`%${query}%`} AND parent_id = ${parentId}
+        ORDER BY is_folder DESC, name ASC
       `;
     }
     
     const result = await db.execute(sqlQuery);
-    return result.rows as File[];
+    
+    // Преобразуем поля из snake_case в camelCase для соответствия типу File
+    return (result.rows || []).map(file => ({
+      id: file.id,
+      name: file.name,
+      path: file.path,
+      type: file.type,
+      size: file.size,
+      isFolder: file.is_folder,
+      parentId: file.parent_id,
+      userId: file.user_id,
+      createdAt: file.created_at,
+      updatedAt: file.updated_at
+    }));
   }
 
   async createFile(fileData: InsertFile): Promise<File> {
