@@ -2,17 +2,18 @@ import { User, File } from '@shared/schema';
 
 // Функция для преобразования snake_case в camelCase при получении данных из БД
 export function adaptUserFromDb(dbUser: any): User {
+  // Make sure all fields are mapped properly from snake_case to camelCase
   return {
     id: dbUser.id,
     email: dbUser.email,
     name: dbUser.name,
     password: dbUser.password,
     role: dbUser.role,
-    quota: dbUser.quota,
-    usedSpace: dbUser.used_space,
-    isBlocked: dbUser.is_blocked,
-    isEmailVerified: dbUser.is_email_verified,
-    createdAt: dbUser.created_at
+    quota: dbUser.quota || "10737418240", // Default 10GB if not set
+    usedSpace: dbUser.used_space || "0",
+    isBlocked: dbUser.is_blocked === true,
+    isEmailVerified: dbUser.is_email_verified === true,
+    createdAt: dbUser.created_at instanceof Date ? dbUser.created_at : new Date(dbUser.created_at)
   };
 }
 
