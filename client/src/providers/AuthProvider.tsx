@@ -13,6 +13,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   isAdmin: boolean;
 }
 
@@ -142,6 +143,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await resetPasswordMutation.mutateAsync(email);
   };
 
+  // Helper function to refresh user data
+  const refreshUser = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+  };
+
   // Check if user is admin
   const isAdmin = !!user && user.role === "admin";
 
@@ -154,6 +160,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         register,
         logout,
         resetPassword,
+        refreshUser,
         isAdmin,
       }}
     >

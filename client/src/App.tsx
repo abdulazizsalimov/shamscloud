@@ -15,6 +15,7 @@ import Contact from "@/pages/Contact";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
+import EmailVerification from "@/pages/EmailVerification";
 
 // Screen reader announcements element for accessibility
 const ScreenReaderAnnounce = () => (
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/auth" component={Auth} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/admin" component={Admin} />
+      <Route path="/verify-email" component={EmailVerification} />
       <Route component={NotFound} />
     </Switch>
   );

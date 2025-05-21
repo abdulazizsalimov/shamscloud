@@ -145,16 +145,28 @@ export function setupAuth(app: Express, storage: IStorage) {
       const newUser = await storage.createUser({
         ...userData,
         role: "user",
-        quota: 10737418240, // 10GB default
+        quota: "10737418240", // 10GB default
       });
-      
-      // Set user ID in session
-      req.session.userId = newUser.id;
+
+      // Create verification token (expires in 24 hours)
+      const verificationToken = await storage.createVerificationToken(
+        newUser.id,
+        "email",
+        24
+      );
+
+      // In a real application, we would send an email with the verification link
+      // For our demo, we will return a "verification_url" in the response
+      const verificationUrl = `/verify-email?token=${verificationToken.token}`;
       
       // Don't send password
       const { password, ...newUserData } = newUser;
       
-      res.status(201).json(newUserData);
+      res.status(201).json({
+        ...newUserData,
+        verification_url: verificationUrl,
+        message: "Please verify your email to complete registration"
+      });
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = fromZodError(error);
@@ -176,6 +188,61 @@ export function setupAuth(app: Express, storage: IStorage) {
       
       res.status(200).json({ message: "Logged out successfully" });
     });
+  });
+
+  // Email verification
+  app.get("/api/auth/verify-email", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.query;
+
+      if (!token || typeof token !== "string") {
+        return res.status(400).json({ message: "Invalid token" });
+      }
+
+      // Find the verification token
+      const verificationToken = await storage.getVerificationToken(token);
+
+      if (!verificationToken) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+
+      // Check if token has expired
+      if (new Date() > verificationToken.expiresAt) {
+        await storage.deleteVerificationToken(verificationToken.id);
+        return res.status(400).json({ message: "Token has expired. Please request a new verification email." });
+      }
+
+      // Verify the user
+      const user = await storage.verifyUser(verificationToken.userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Delete the verification token
+      await storage.deleteVerificationToken(verificationToken.id);
+
+      // If the user is already logged in, just return success
+      if (req.session.userId === verificationToken.userId) {
+        const { password, ...userData } = user;
+        return res.json({
+          message: "Email verified successfully",
+          user: userData
+        });
+      }
+
+      // Otherwise, log the user in
+      req.session.userId = user.id;
+      const { password, ...userData } = user;
+
+      res.json({
+        message: "Email verified successfully",
+        user: userData
+      });
+    } catch (error) {
+      console.error("Email verification error:", error);
+      res.status(500).json({ message: "An error occurred during email verification" });
+    }
   });
 
   // Reset password
