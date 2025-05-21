@@ -25,7 +25,9 @@ export const translations = {
       search: "Поиск",
       yes: "Да",
       no: "Нет",
-      accessibilitySettings: "Настройки доступности"
+      accessibilitySettings: "Настройки доступности",
+      language: "Язык",
+      selectLanguage: "Выберите язык"
     },
     accessibility: {
       theme: "Тема:",
@@ -174,7 +176,9 @@ export const translations = {
       search: "Search",
       yes: "Yes",
       no: "No",
-      accessibilitySettings: "Accessibility Settings"
+      accessibilitySettings: "Accessibility Settings",
+      language: "Language",
+      selectLanguage: "Select Language"
     },
     accessibility: {
       theme: "Theme:",

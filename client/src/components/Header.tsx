@@ -6,7 +6,7 @@ import { useAccessibility } from "@/providers/AccessibilityProvider";
 import { Logo } from "@/components/Logo";
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { Button } from "@/components/ui/button";
-import { Accessibility, Menu, User, LogOut } from "lucide-react";
+import { Accessibility, Menu, User, LogOut, Globe } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +18,7 @@ import {
 
 export function Header() {
   const [location] = useLocation();
-  const { t } = useLocale();
+  const { t, locale, setLocale } = useLocale();
   const { user, logout, isAdmin } = useAuth();
   const { togglePanel } = useAccessibility();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -91,6 +91,31 @@ export function Header() {
               </Link>
             )}
             
+            {/* Переключатель языка */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label={t("common.language")}>
+                  <Globe className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{t("common.selectLanguage")}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => setLocale('ru')}
+                  className={locale === 'ru' ? "bg-blue-50 font-medium" : ""}
+                >
+                  Русский
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setLocale('en')}
+                  className={locale === 'en' ? "bg-blue-50 font-medium" : ""}
+                >
+                  English
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <Button 
               variant="ghost" 
               size="icon" 
@@ -103,6 +128,31 @@ export function Header() {
           
           {/* Mobile Navigation Button */}
           <div className="flex items-center space-x-2 md:hidden">
+            {/* Мобильный переключатель языка */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label={t("common.language")}>
+                  <Globe className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{t("common.selectLanguage")}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => setLocale('ru')}
+                  className={locale === 'ru' ? "bg-blue-50 font-medium" : ""}
+                >
+                  Русский
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setLocale('en')}
+                  className={locale === 'en' ? "bg-blue-50 font-medium" : ""}
+                >
+                  English
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <Button 
               variant="ghost" 
               size="icon" 
