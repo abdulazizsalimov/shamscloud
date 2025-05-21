@@ -117,6 +117,10 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
             
+            {/* Theme Toggle Button */}
+            <ThemeToggle />
+            
+            {/* Accessibility Button */}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -154,6 +158,10 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
             
+            {/* Mobile theme toggle */}
+            <ThemeToggle />
+            
+            {/* Mobile accessibility button */}
             <Button 
               variant="ghost" 
               size="icon" 
