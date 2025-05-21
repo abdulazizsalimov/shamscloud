@@ -9,49 +9,108 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useEffect, useRef, useState, KeyboardEvent as ReactKeyboardEvent } from "react";
 
 export function AccessibilityPanel() {
   const { t, toggleLocale, locale } = useLocale();
   const {
     isPanelOpen,
-    theme,
-    setTheme,
     fontSize,
     setFontSize,
     lineSpacing,
     setLineSpacing,
     wordSpacing,
-    setWordSpacing
+    setWordSpacing,
+    isBlackAndWhite,
+    toggleBlackAndWhite,
+    panelRef,
+    closePanel
   } = useAccessibility();
+  
+  const [focusableElements, setFocusableElements] = useState<HTMLElement[]>([]);
+  const firstFocusableEl = useRef<HTMLElement | null>(null);
+  const lastFocusableEl = useRef<HTMLElement | null>(null);
+
+  // Сохраняем фокус для возврата после закрытия панели
+  const previousFocus = useRef<HTMLElement | null>(null);
+  
+  // Устанавливаем фокусируемые элементы для ловушки фокуса
+  useEffect(() => {
+    if (isPanelOpen && panelRef.current) {
+      previousFocus.current = document.activeElement as HTMLElement;
+      
+      const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      const elements = Array.from(
+        panelRef.current.querySelectorAll(selector)
+      ) as HTMLElement[];
+      
+      setFocusableElements(elements);
+      
+      if (elements.length > 0) {
+        firstFocusableEl.current = elements[0];
+        lastFocusableEl.current = elements[elements.length - 1];
+        
+        // Автоматически устанавливаем фокус на первый элемент
+        setTimeout(() => {
+          firstFocusableEl.current?.focus();
+        }, 100);
+      }
+      
+      return () => {
+        // Возвращаем фокус при закрытии панели
+        if (previousFocus.current) {
+          previousFocus.current.focus();
+        }
+      };
+    }
+  }, [isPanelOpen]);
+  
+  // Обработчик клавиш для ловушки фокуса и закрытия по Escape
+  const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') {
+      closePanel();
+      return;
+    }
+    
+    // Ловушка фокуса с Tab
+    if (e.key === 'Tab') {
+      // Если нажат Shift+Tab и текущий элемент - первый в списке, переводим фокус на последний
+      if (e.shiftKey && document.activeElement === firstFocusableEl.current) {
+        e.preventDefault();
+        lastFocusableEl.current?.focus();
+      } 
+      // Если нажат Tab и текущий элемент - последний в списке, переводим фокус на первый
+      else if (!e.shiftKey && document.activeElement === lastFocusableEl.current) {
+        e.preventDefault();
+        firstFocusableEl.current?.focus();
+      }
+    }
+  };
 
   if (!isPanelOpen) {
     return null;
   }
 
   return (
-    <div className="fixed top-16 right-4 z-50 w-64 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-app">
-      <h2 className="text-lg font-semibold mb-3">
-        {t("common.accessibilitySettings")}
-      </h2>
-      
-      <div className="mb-3">
-        <Label htmlFor="theme-select" className="block mb-1 text-sm font-medium">
-          {t("accessibility.theme")}
-        </Label>
-        <Select
-          value={theme}
-          onValueChange={(value) => setTheme(value as any)}
+    <div 
+      ref={panelRef} 
+      className="fixed top-16 right-4 z-50 w-64 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-app"
+      onKeyDown={handleKeyDown}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="accessibility-title"
+    >
+      <div className="flex justify-between items-center mb-3">
+        <h2 id="accessibility-title" className="text-lg font-semibold">
+          {t("common.accessibilitySettings")}
+        </h2>
+        <button 
+          onClick={closePanel}
+          className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          aria-label={t("common.close")}
         >
-          <SelectTrigger id="theme-select" className="w-full">
-            <SelectValue placeholder={t("accessibility.theme")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="light-theme">{t("accessibility.light")}</SelectItem>
-            <SelectItem value="dark-theme">{t("accessibility.dark")}</SelectItem>
-            <SelectItem value="high-contrast-theme">{t("accessibility.highContrast")}</SelectItem>
-            <SelectItem value="bw-theme">{t("accessibility.blackWhite")}</SelectItem>
-          </SelectContent>
-        </Select>
+          ✕
+        </button>
       </div>
       
       <div className="mb-3">
@@ -110,6 +169,19 @@ export function AccessibilityPanel() {
             <SelectItem value="wider">{t("accessibility.wider")}</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+      
+      <div className="flex items-center mb-3">
+        <Label htmlFor="black-white-switch" className="text-sm font-medium mr-2">
+          {t("accessibility.blackWhiteMode")}
+        </Label>
+        <div className="relative inline-block w-12 mr-2 align-middle select-none">
+          <Switch
+            id="black-white-switch"
+            checked={isBlackAndWhite}
+            onCheckedChange={toggleBlackAndWhite}
+          />
+        </div>
       </div>
       
       <div className="flex items-center">

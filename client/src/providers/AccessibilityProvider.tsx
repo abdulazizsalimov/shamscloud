@@ -1,9 +1,8 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from "react";
 
 type FontSize = "text-base" | "text-lg" | "text-xl" | "text-2xl";
 type LineSpacing = "leading-normal" | "leading-relaxed" | "leading-loose";
 type WordSpacing = "normal" | "wide" | "wider";
-type ThemeType = "light-theme" | "dark-theme" | "high-contrast-theme" | "bw-theme";
 
 interface AccessibilityContextType {
   fontSize: FontSize;
@@ -12,10 +11,12 @@ interface AccessibilityContextType {
   setLineSpacing: (spacing: LineSpacing) => void;
   wordSpacing: WordSpacing;
   setWordSpacing: (spacing: WordSpacing) => void;
-  theme: ThemeType;
-  setTheme: (theme: ThemeType) => void;
+  isBlackAndWhite: boolean;
+  toggleBlackAndWhite: () => void;
   isPanelOpen: boolean;
   togglePanel: () => void;
+  panelRef: React.RefObject<HTMLDivElement>;
+  closePanel: () => void;
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
@@ -25,6 +26,9 @@ interface AccessibilityProviderProps {
 }
 
 export function AccessibilityProvider({ children }: AccessibilityProviderProps) {
+  // Ref для панели доступности (для ловушки фокуса и обработки клавиши Escape)
+  const panelRef = useRef<HTMLDivElement>(null);
+  
   // Initialize state with stored preferences or defaults
   const [fontSize, setFontSizeState] = useState<FontSize>(() => {
     const stored = localStorage.getItem('preferred-font-size');
@@ -41,9 +45,9 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
     return (stored as WordSpacing) || 'normal';
   });
 
-  const [theme, setThemeState] = useState<ThemeType>(() => {
-    const stored = localStorage.getItem('preferred-theme');
-    return (stored as ThemeType) || 'light-theme';
+  const [isBlackAndWhite, setIsBlackAndWhite] = useState<boolean>(() => {
+    const stored = localStorage.getItem('preferred-black-and-white');
+    return stored === 'true';
   });
 
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -82,17 +86,30 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
     localStorage.setItem('preferred-word-spacing', wordSpacing);
   }, [wordSpacing]);
 
-  // Effect to apply theme to html element
+  // Effect to apply black and white mode
   useEffect(() => {
-    document.documentElement.classList.remove(
-      'light-theme',
-      'dark-theme',
-      'high-contrast-theme',
-      'bw-theme'
-    );
-    document.documentElement.classList.add(theme);
-    localStorage.setItem('preferred-theme', theme);
-  }, [theme]);
+    if (isBlackAndWhite) {
+      document.documentElement.classList.add('grayscale');
+    } else {
+      document.documentElement.classList.remove('grayscale');
+    }
+    localStorage.setItem('preferred-black-and-white', isBlackAndWhite.toString());
+  }, [isBlackAndWhite]);
+
+  // Effect to handle keydown events for accessibility panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isPanelOpen) return;
+      
+      // Закрытие панели при нажатии Escape
+      if (e.key === 'Escape') {
+        setIsPanelOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPanelOpen]);
 
   // Wrapper functions to update state and local storage
   const setFontSize = (size: FontSize) => {
@@ -107,13 +124,17 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
     setWordSpacingState(spacing);
   };
 
-  const setTheme = (newTheme: ThemeType) => {
-    setThemeState(newTheme);
+  const toggleBlackAndWhite = () => {
+    setIsBlackAndWhite(prev => !prev);
   };
 
-  const togglePanel = () => {
+  const togglePanel = useCallback(() => {
     setIsPanelOpen(prev => !prev);
-  };
+  }, []);
+
+  const closePanel = useCallback(() => {
+    setIsPanelOpen(false);
+  }, []);
 
   return (
     <AccessibilityContext.Provider
@@ -124,10 +145,12 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
         setLineSpacing,
         wordSpacing,
         setWordSpacing,
-        theme,
-        setTheme,
+        isBlackAndWhite,
+        toggleBlackAndWhite,
         isPanelOpen,
-        togglePanel
+        togglePanel,
+        panelRef,
+        closePanel
       }}
     >
       {children}
