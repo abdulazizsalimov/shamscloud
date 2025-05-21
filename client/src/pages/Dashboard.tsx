@@ -220,13 +220,13 @@ export default function Dashboard() {
         if (!response.ok) {
           // Если сервер вернул ошибку, показываем ее пользователю
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to access folder");
+          throw new Error(errorData.message || t("notifications.noPermission"));
         }
       } catch (error) {
         console.error("Folder access error:", error);
         toast({
           title: t("common.error"),
-          description: error instanceof Error ? error.message : "Failed to access folder",
+          description: error instanceof Error ? error.message : t("notifications.noPermission"),
           variant: "destructive"
         });
         return;
@@ -274,7 +274,7 @@ export default function Dashboard() {
           
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to access folder");
+            throw new Error(errorData.message || t("notifications.noPermission"));
           }
           
           // Если всё в порядке, обновляем состояние
@@ -287,7 +287,7 @@ export default function Dashboard() {
           console.error("Breadcrumb navigation error:", error);
           toast({
             title: t("common.error"),
-            description: error instanceof Error ? error.message : "Failed to navigate to folder",
+            description: error instanceof Error ? error.message : t("notifications.navigateError"),
             variant: "destructive"
           });
         }
@@ -296,7 +296,7 @@ export default function Dashboard() {
       console.error("Breadcrumb navigation error:", error);
       toast({
         title: t("common.error"),
-        description: "Failed to navigate to the selected location",
+        description: t("notifications.navigateError"),
         variant: "destructive"
       });
     }
@@ -331,7 +331,7 @@ export default function Dashboard() {
     } catch (error) {
       toast({
         title: t("common.error"),
-        description: "Failed to download file",
+        description: t("notifications.downloadFailed"),
         variant: "destructive"
       });
     }

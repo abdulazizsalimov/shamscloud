@@ -45,6 +45,7 @@ export const translations = {
       renameFailed: "Не удалось переименовать файл",
       createFolderSuccess: "Папка успешно создана",
       createFolderFailed: "Не удалось создать папку",
+      downloadFailed: "Не удалось скачать файл",
       shareSuccess: "Ссылка скопирована в буфер обмена",
       shareFailed: "Не удалось поделиться файлом",
       navigateError: "Не удалось перейти в выбранное местоположение",
