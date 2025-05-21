@@ -196,7 +196,8 @@ export const translations = {
       failedToUpdateRole: "Не удалось обновить роль пользователя",
       userDeleted: "Пользователь удален",
       userDeletedSuccess: "Пользователь успешно удален",
-      failedToDeleteUser: "Не удалось удалить пользователя"
+      failedToDeleteUser: "Не удалось удалить пользователя",
+      confirmDeleteUser: "Вы уверены, что хотите удалить этого пользователя? Это приведет к удалению всех его файлов и не может быть отменено."
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",
@@ -400,7 +401,8 @@ export const translations = {
       failedToUpdateRole: "Failed to update user role",
       userDeleted: "User deleted",
       userDeletedSuccess: "The user has been deleted successfully",
-      failedToDeleteUser: "Failed to delete user"
+      failedToDeleteUser: "Failed to delete user",
+      confirmDeleteUser: "Are you sure you want to delete this user? This will remove all their files and cannot be undone."
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",

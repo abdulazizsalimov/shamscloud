@@ -633,7 +633,7 @@ export function UserManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t("admin.userDeleted")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {selectedUser?.email}? This will remove all their files and cannot be undone.
+              {t("admin.confirmDeleteUser")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
