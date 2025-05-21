@@ -1,10 +1,22 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import session from "express-session";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { setupFiles } from "./files";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup session middleware
+  app.use(session({
+    secret: 'shams-cloud-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: false, // set to true in production with HTTPS
+      maxAge: 1000 * 60 * 60 * 24 // 24 hours
+    }
+  }));
+
   // Setup authentication routes
   setupAuth(app, storage);
   
