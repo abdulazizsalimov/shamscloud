@@ -176,7 +176,7 @@ export const translations = {
       blocked: "Заблокирован",
       showing: "Показано",
       of: "из",
-      users: "пользователей",
+      users: "Пользователи",
       quotaManagement: "Управление квотами",
       dashboard: "Панель управления",
       createAccountInfo: "Создать новую учетную запись пользователя",
