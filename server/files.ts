@@ -61,9 +61,35 @@ export function setupFiles(app: Express, storageService: IStorage) {
   app.get("/api/files", authGuard, async (req: Request, res: Response) => {
     try {
       const userId = (req as any).user.id;
-      const parentId = req.query.parentId !== undefined 
-        ? (req.query.parentId === 'null' ? null : parseInt(req.query.parentId as string)) 
-        : null;
+      
+      // Безопасно получаем parentId, убедившись, что он является числом или null
+      let parentId: number | null = null;
+      
+      if (req.query.parentId !== undefined && req.query.parentId !== 'null') {
+        try {
+          const parsedId = parseInt(req.query.parentId as string);
+          if (!isNaN(parsedId)) {
+            // Проверяем, имеет ли пользователь доступ к этой папке
+            const folder = await storageService.getFile(parsedId);
+            
+            if (!folder) {
+              return res.status(404).json({ message: "Folder not found" });
+            }
+            
+            if (folder.userId !== userId) {
+              console.error(`Security issue: User ${userId} tried to access folder ${parsedId} owned by ${folder.userId}`);
+              return res.status(403).json({ message: "You don't have permission to access this folder" });
+            }
+            
+            parentId = parsedId;
+          } else {
+            return res.status(400).json({ message: "Invalid parent folder ID format" });
+          }
+        } catch (e) {
+          return res.status(400).json({ message: "Invalid parent folder ID" });
+        }
+      }
+      
       const search = req.query.search as string;
       
       let files;
@@ -75,7 +101,14 @@ export function setupFiles(app: Express, storageService: IStorage) {
           files = await storageService.getFilesByParentId(parentId, userId);
         }
         
-        res.json(files);
+        // Дополнительная проверка безопасности - проверка, что все возвращаемые файлы принадлежат пользователю
+        const safeFiles = files.filter(file => file.userId === userId);
+        
+        if (safeFiles.length !== files.length) {
+          console.error(`Security issue: Filtered out ${files.length - safeFiles.length} files not belonging to user ${userId}`);
+        }
+        
+        res.json(safeFiles);
       } catch (error) {
         // Если ошибка связана с отсутствием прав доступа
         if (error instanceof Error && error.message.includes("permission")) {
@@ -162,9 +195,21 @@ export function setupFiles(app: Express, storageService: IStorage) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
-      const parentId = req.body.parentId ? parseInt(req.body.parentId) : null;
+      // Безопасно получаем parentId, убедившись, что он является числом или null
+      let parentId: number | null = null;
       
-      // If parentId is provided, check if it exists and belongs to user
+      if (req.body.parentId) {
+        try {
+          parentId = parseInt(req.body.parentId);
+          if (isNaN(parentId)) {
+            return res.status(400).json({ message: "Invalid parent folder ID format" });
+          }
+        } catch (e) {
+          return res.status(400).json({ message: "Invalid parent folder ID" });
+        }
+      }
+      
+      // Если parentId предоставлен, проверяем, существует ли он и принадлежит пользователю
       if (parentId !== null) {
         const parentFolder = await storageService.getFile(parentId);
         
@@ -173,6 +218,7 @@ export function setupFiles(app: Express, storageService: IStorage) {
         }
         
         if (parentFolder.userId !== userId) {
+          console.error(`Security issue: User ${userId} tried to upload to folder ${parentId} owned by user ${parentFolder.userId}`);
           return res.status(403).json({ message: "You don't have permission to access this folder" });
         }
         
@@ -181,40 +227,66 @@ export function setupFiles(app: Express, storageService: IStorage) {
         }
       }
       
-      // Calculate total size of uploaded files
-      const totalUploadSize = (req.files as Express.Multer.File[]).reduce((acc, file) => acc + file.size, 0);
+      // Вычисляем общий размер загруженных файлов
+      const files = req.files as Express.Multer.File[];
+      const totalUploadSize = files.reduce((acc, file) => acc + file.size, 0);
       
-      // Check if user has enough space
-      if (user.usedSpace + totalUploadSize > user.quota) {
-        // Delete uploaded files
-        for (const file of req.files as Express.Multer.File[]) {
+      // Проверяем, достаточно ли у пользователя места
+      const userQuota = parseInt(user.quota);
+      const userUsedSpace = parseInt(user.usedSpace);
+      
+      if (userUsedSpace + totalUploadSize > userQuota) {
+        // Удаляем загруженные файлы
+        for (const file of files) {
           await fs.unlink(file.path).catch(console.error);
         }
         
-        return res.status(400).json({ message: "Not enough storage space" });
+        return res.status(400).json({ 
+          message: "Not enough storage space",
+          details: {
+            available: userQuota - userUsedSpace,
+            required: totalUploadSize,
+            used: userUsedSpace,
+            total: userQuota
+          }
+        });
       }
       
-      // Save files to database
+      // Сохраняем файлы в базе данных
       const uploadedFiles = [];
       
-      for (const file of req.files as Express.Multer.File[]) {
-        const newFile = await storageService.createFile({
-          name: file.originalname,
-          path: file.filename,
-          type: file.mimetype,
-          size: file.size,
-          isFolder: false,
-          parentId,
-          userId
-        });
-        
-        uploadedFiles.push(newFile);
+      for (const file of files) {
+        try {
+          const newFile = await storageService.createFile({
+            name: file.originalname,
+            path: file.filename,
+            type: file.mimetype,
+            size: file.size,
+            isFolder: false,
+            parentId,
+            userId
+          });
+          
+          uploadedFiles.push(newFile);
+        } catch (error) {
+          console.error(`Failed to save file ${file.originalname}:`, error);
+          // Удаляем файл с диска, если его не удалось сохранить в БД
+          await fs.unlink(file.path).catch(console.error);
+        }
+      }
+      
+      if (uploadedFiles.length === 0) {
+        return res.status(500).json({ message: "Failed to save all uploaded files" });
       }
       
       res.status(201).json(uploadedFiles);
     } catch (error) {
       console.error("Upload files error:", error);
-      res.status(500).json({ message: "An error occurred while uploading files" });
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message || "An error occurred while uploading files" });
+      } else {
+        res.status(500).json({ message: "An error occurred while uploading files" });
+      }
     }
   });
 

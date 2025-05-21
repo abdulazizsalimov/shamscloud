@@ -176,34 +176,71 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllUsers(page: number = 1, limit: number = 10, search: string = ""): Promise<{ users: User[], total: number }> {
-    const offset = (page - 1) * limit;
+    // Преобразуем числовые параметры для SQL, чтобы избежать ошибки типов
+    const numLimit = Number(limit);
+    const numOffset = (page - 1) * numLimit;
     
-    let queryParams = '';
-    const values: any[] = [];
-    let paramIndex = 1;
+    let query;
     
-    if (search) {
-      queryParams = `WHERE name ILIKE $${paramIndex} OR email ILIKE $${paramIndex}`;
-      values.push(`%${search}%`);
+    if (search && search.trim()) {
+      // Поиск по имени или email
+      query = db.select()
+        .from(users)
+        .where(
+          or(
+            like(users.name, `%${search}%`),
+            like(users.email, `%${search}%`)
+          )
+        )
+        .orderBy(users.id)
+        .limit(numLimit)
+        .offset(numOffset);
+    } else {
+      // Без поиска
+      query = db.select()
+        .from(users)
+        .orderBy(users.id)
+        .limit(numLimit)
+        .offset(numOffset);
     }
     
-    // Получаем пользователей
-    const result = await db.execute(sql`
-      SELECT * FROM users
-      ${sql.raw(queryParams ? queryParams : '')}
-      ORDER BY id
-      LIMIT ${limit} OFFSET ${offset}
-    `);
+    const result = await query;
     
     // Получаем общее количество для пагинации
-    const countResult = await db.execute(sql`
-      SELECT COUNT(*) FROM users
-      ${sql.raw(queryParams ? queryParams : '')}
-    `);
+    let countQuery;
+    
+    if (search && search.trim()) {
+      countQuery = db.select({ count: sql`count(*)`.mapWith(Number) })
+        .from(users)
+        .where(
+          or(
+            like(users.name, `%${search}%`),
+            like(users.email, `%${search}%`)
+          )
+        );
+    } else {
+      countQuery = db.select({ count: sql`count(*)`.mapWith(Number) })
+        .from(users);
+    }
+    
+    const [countResult] = await countQuery;
+    
+    // Преобразуем поля из snake_case в camelCase для соответствия типу User
+    const mappedUsers = result.map(user => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      password: user.password,
+      role: user.role,
+      quota: user.quota,
+      usedSpace: user.used_space,
+      isBlocked: user.is_blocked,
+      createdAt: user.created_at
+    }));
     
     return {
-      users: result.rows as User[],
-      total: parseInt(countResult.rows[0].count, 10)
+      users: mappedUsers,
+      total: countResult.count || 0
     };
   }
 
@@ -322,22 +359,35 @@ export class DatabaseStorage implements IStorage {
     // Преобразуем размер в строку
     const size = fileData.size !== undefined ? fileData.size.toString() : '0';
     
-    // Создаем файл через SQL для обхода проблем с типами
-    const result = await db.execute(sql`
-      INSERT INTO files (name, path, type, size, is_folder, parent_id, user_id)
-      VALUES (
-        ${fileData.name},
-        ${fileData.path},
-        ${fileData.type},
-        ${size},
-        ${fileData.isFolder || false},
-        ${fileData.parentId === null ? sql`NULL` : fileData.parentId},
-        ${fileData.userId}
-      )
-      RETURNING *
-    `);
+    // Преобразуем camelCase в snake_case для соответствия полям базы данных
+    const insertData = {
+      name: fileData.name,
+      path: fileData.path,
+      type: fileData.type,
+      size: size,
+      is_folder: fileData.isFolder || false,
+      parent_id: fileData.parentId,
+      user_id: fileData.userId
+    };
     
-    const file = result.rows[0] as File;
+    // Добавляем запись в базу данных
+    const [newFile] = await db.insert(files)
+      .values(insertData)
+      .returning();
+    
+    // Преобразуем результат в правильный формат
+    const file: File = {
+      id: newFile.id,
+      name: newFile.name,
+      path: newFile.path,
+      type: newFile.type,
+      size: newFile.size,
+      isFolder: newFile.is_folder,
+      parentId: newFile.parent_id,
+      userId: newFile.user_id,
+      createdAt: newFile.created_at,
+      updatedAt: newFile.updated_at
+    };
     
     // Обновляем использованное пространство пользователя
     if (!file.isFolder && file.size) {
