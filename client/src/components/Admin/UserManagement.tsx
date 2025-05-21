@@ -169,14 +169,14 @@ export function UserManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "User role updated",
-        description: "The user's role has been updated"
+        title: t("admin.roleUpdated"),
+        description: t("admin.roleUpdatedSuccess")
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update user role",
+        title: t("common.error"),
+        description: error.message || t("admin.failedToUpdateRole"),
         variant: "destructive"
       });
     }
@@ -190,16 +190,16 @@ export function UserManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "User deleted",
-        description: "The user has been deleted successfully"
+        title: t("admin.userDeleted"),
+        description: t("admin.userDeletedSuccess")
       });
       setIsDeleteDialogOpen(false);
       setSelectedUser(null);
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete user",
+        title: t("common.error"),
+        description: error.message || t("admin.failedToDeleteUser"),
         variant: "destructive"
       });
     }
@@ -591,9 +591,9 @@ export function UserManagement() {
       <Dialog open={isSetQuotaDialogOpen} onOpenChange={setIsSetQuotaDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Set Storage Quota</DialogTitle>
+            <DialogTitle>{t("admin.quotaManagement")}</DialogTitle>
             <DialogDescription>
-              Set the storage quota for {selectedUser?.email}
+              {t("admin.quotaUpdatedSuccess")}
             </DialogDescription>
           </DialogHeader>
           
@@ -631,7 +631,7 @@ export function UserManagement() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.userDeleted")}</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete {selectedUser?.email}? This will remove all their files and cannot be undone.
             </AlertDialogDescription>
