@@ -67,6 +67,7 @@ export const translations = {
       dark: "Тёмная",
       highContrast: "Высокий контраст",
       blackWhite: "Чёрно-белая",
+      blackWhiteMode: "Чёрно-белый режим",
       fontSize: "Размер шрифта:",
       normal: "Обычный",
       large: "Большой",
