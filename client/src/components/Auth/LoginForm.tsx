@@ -16,6 +16,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { GoogleAuthButton } from "./GoogleAuthButton";
 
 interface LoginFormProps {
   onShowRegister: () => void;
@@ -126,10 +128,23 @@ export function LoginForm({ onShowRegister, onShowReset }: LoginFormProps) {
         >
           {isLoading ? t("common.loading") : t("auth.loginButton")}
         </Button>
-
+        
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-background px-2 text-xs text-muted-foreground">
+              {t("common.or")}
+            </span>
+          </div>
+        </div>
+        
+        <GoogleAuthButton />
+        
         <div className="text-center mt-4">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            {t("common.or")}
+            {t("auth.backToLogin")}
           </span>
           <Button 
             type="button" 

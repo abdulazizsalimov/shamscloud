@@ -15,6 +15,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Separator } from "@/components/ui/separator";
+import { GoogleAuthButton } from "./GoogleAuthButton";
 
 interface RegisterFormProps {
   onShowLogin: () => void;
@@ -141,10 +143,23 @@ export function RegisterForm({ onShowLogin }: RegisterFormProps) {
         >
           {isLoading ? t("common.loading") : t("auth.registerButton")}
         </Button>
+        
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-background px-2 text-xs text-muted-foreground">
+              {t("common.or")}
+            </span>
+          </div>
+        </div>
+        
+        <GoogleAuthButton />
 
         <div className="text-center mt-4">
           <span className="text-sm text-gray-600 dark:text-gray-300">
-            {t("common.or")}
+            {t("auth.backToLogin")}
           </span>
           <Button 
             type="button" 
