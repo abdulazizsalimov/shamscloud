@@ -4,6 +4,7 @@ import { IStorage } from "./storage";
 import { loginSchema, registerSchema, resetPasswordSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { loadSettings } from "./settings";
 
 declare module "express-session" {
   interface SessionData {
@@ -300,13 +301,27 @@ export function setupAuth(app: Express, storage: IStorage) {
       const randomPassword = Math.random().toString(36).slice(-8);
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
       
-      // Create new user
+      // Получаем настройки по умолчанию из системных настроек
+      let defaultQuota = "10737418240"; // 10GB по умолчанию
+      try {
+        const settingsData = loadSettings();
+        if (settingsData && settingsData.defaultQuota) {
+          defaultQuota = settingsData.defaultQuota;
+        }
+      } catch (error) {
+        console.error("Error loading settings:", error);
+        // Используем значение по умолчанию
+      }
+      
+      console.log(`Creating Google user with default quota: ${defaultQuota}`);
+      
+      // Create new user with all required fields
       user = await storage.createUser({
         name: name || email.split('@')[0], // Use part of email if no name provided
         email,
         password: hashedPassword,
         role: "user",
-        quota: "10737418240", // 10GB default
+        quota: defaultQuota,
         usedSpace: "0",
         isBlocked: false,
         isEmailVerified: true // Auto-verify Google users

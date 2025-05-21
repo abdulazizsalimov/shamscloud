@@ -39,7 +39,7 @@ function ensureSettingsDirectory() {
 }
 
 // Load settings from file or return defaults
-function loadSettings() {
+export function loadSettings() {
   try {
     ensureSettingsDirectory();
     if (fs.existsSync(SETTINGS_FILE)) {
@@ -57,7 +57,7 @@ function loadSettings() {
 }
 
 // Save settings to file
-function saveSettings(settings: any) {
+export function saveSettings(settings: any) {
   try {
     ensureSettingsDirectory();
     settings.lastUpdated = new Date().toISOString();
@@ -70,11 +70,15 @@ function saveSettings(settings: any) {
 }
 
 // Calculate total used space in the system
-async function calculateUsedSpace() {
+export async function calculateUsedSpace() {
   try {
-    // Query the database to get sum of all file sizes
-    const result = await db.select({ totalSize: sum(files.size) }).from(files);
-    const totalSizeStr = result[0].totalSize || "0";
+    // Более безопасный способ подсчета суммы размера файлов
+    const result = await db.execute(`
+      SELECT COALESCE(SUM(CAST(size AS NUMERIC)), 0) as total_size 
+      FROM files
+    `);
+    
+    const totalSizeStr = result.rows[0]?.total_size || "0";
     return parseInt(totalSizeStr);
   } catch (error) {
     console.error("Error calculating used space:", error);
@@ -83,7 +87,7 @@ async function calculateUsedSpace() {
 }
 
 // Get available system disk space
-function getAvailableDiskSpace() {
+export function getAvailableDiskSpace() {
   try {
     // Get available disk space where uploads are stored
     const stats = fs.statfsSync(path.join(process.cwd(), "uploads"));
