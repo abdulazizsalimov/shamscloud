@@ -77,7 +77,7 @@ export function FileUpload({ onUploadFiles, currentPath, disabled = false }: Fil
       
       {isUploading && (
         <div className="mt-4">
-          <p className="text-sm mb-2">{uploadProgress === 100 ? 'Upload complete!' : 'Uploading...'}</p>
+          <p className="text-sm mb-2">{uploadProgress === 100 ? t("notifications.uploadSuccess") : t("common.loading")}</p>
           <Progress value={uploadProgress} />
         </div>
       )}

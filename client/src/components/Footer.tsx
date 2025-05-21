@@ -18,21 +18,21 @@ export function Footer() {
           
           <div className="flex space-x-6">
             <Link href="/about">
-              <a className="text-gray-600 dark:text-gray-400 hover:text-primary">
+              <span className="text-gray-600 dark:text-gray-400 hover:text-primary cursor-pointer">
                 {t("common.about")}
-              </a>
+              </span>
             </Link>
             
             <Link href="/contact">
-              <a className="text-gray-600 dark:text-gray-400 hover:text-primary">
+              <span className="text-gray-600 dark:text-gray-400 hover:text-primary cursor-pointer">
                 {t("common.contact")}
-              </a>
+              </span>
             </Link>
             
             <Link href="/privacy">
-              <a className="text-gray-600 dark:text-gray-400 hover:text-primary">
+              <span className="text-gray-600 dark:text-gray-400 hover:text-primary cursor-pointer">
                 {t("footer.privacyPolicy")}
-              </a>
+              </span>
             </Link>
           </div>
         </div>

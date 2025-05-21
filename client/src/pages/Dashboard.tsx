@@ -121,7 +121,7 @@ export default function Dashboard() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Upload failed');
+        throw new Error(errorData.message || t("notifications.uploadFailed"));
       }
       
       return response.json();
