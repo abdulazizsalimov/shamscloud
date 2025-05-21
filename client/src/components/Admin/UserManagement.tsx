@@ -100,16 +100,16 @@ export function UserManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "User created",
-        description: "The user has been created successfully"
+        title: t("admin.userCreated"),
+        description: t("admin.userCreatedSuccess")
       });
       setIsAddUserDialogOpen(false);
       resetNewUserForm();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create user",
+        title: t("common.error"),
+        description: error.message || t("admin.failedToCreateUser"),
         variant: "destructive"
       });
     }
@@ -124,15 +124,15 @@ export function UserManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "Quota updated",
-        description: "The user's storage quota has been updated"
+        title: t("admin.quotaUpdated"),
+        description: t("admin.quotaUpdatedSuccess")
       });
       setIsSetQuotaDialogOpen(false);
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update quota",
+        title: t("common.error"),
+        description: error.message || t("admin.failedToUpdateQuota"),
         variant: "destructive"
       });
     }
@@ -147,14 +147,14 @@ export function UserManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
-        title: "User status updated",
-        description: "The user's status has been updated"
+        title: t("admin.statusUpdated"),
+        description: t("admin.statusUpdatedSuccess")
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update user status",
+        title: t("common.error"),
+        description: error.message || t("admin.failedToUpdateStatus"),
         variant: "destructive"
       });
     }
