@@ -12,6 +12,17 @@ export const users = pgTable("users", {
   quota: text("quota").notNull().default("10737418240"), // 10GB in bytes as string
   used_space: text("used_space").notNull().default("0"), // Used space as string
   is_blocked: boolean("is_blocked").notNull().default(false),
+  is_email_verified: boolean("is_email_verified").notNull().default(false), // Флаг верификации email
+  created_at: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Токены подтверждения
+export const verificationTokens = pgTable("verification_tokens", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  token: text("token").notNull().unique(),
+  type: text("type").notNull().default("email"), // тип токена: email, reset-password и т.д.
+  expires_at: timestamp("expires_at").notNull(),
   created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -58,6 +69,16 @@ export interface User {
   quota: string;
   usedSpace: string;
   isBlocked: boolean;
+  isEmailVerified: boolean;
+  createdAt: Date;
+}
+
+export interface VerificationToken {
+  id: number;
+  userId: number;
+  token: string;
+  type: string;
+  expiresAt: Date;
   createdAt: Date;
 }
 

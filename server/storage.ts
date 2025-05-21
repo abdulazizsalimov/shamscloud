@@ -13,6 +13,12 @@ export interface IStorage {
   deleteUser(id: number): Promise<boolean>;
   getAllUsers(page?: number, limit?: number, search?: string): Promise<{ users: User[], total: number }>;
   
+  // Verification operations
+  createVerificationToken(userId: number, type: string, expiresInHours: number): Promise<VerificationToken>;
+  getVerificationToken(token: string): Promise<VerificationToken | undefined>;
+  verifyUser(userId: number): Promise<User | undefined>;
+  deleteVerificationToken(id: number): Promise<boolean>;
+  
   // File operations
   getFile(id: number): Promise<File | undefined>;
   getFilesByParentId(parentId: number | null, userId: number): Promise<File[]>;
