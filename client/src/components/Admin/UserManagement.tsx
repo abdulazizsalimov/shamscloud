@@ -297,7 +297,7 @@ export function UserManagement() {
             <DialogHeader>
               <DialogTitle>{t("admin.addUser")}</DialogTitle>
               <DialogDescription>
-                Create a new user account
+                {t("admin.createAccountInfo")}
               </DialogDescription>
             </DialogHeader>
             
@@ -427,8 +427,8 @@ export function UserManagement() {
         {!isLoading && (!userData?.users || userData.users.length === 0) && (
           <div className="p-8 text-center text-gray-500 dark:text-gray-400">
             {searchQuery 
-              ? "No users found matching your search criteria." 
-              : "No users found in the system."}
+              ? t("admin.noUsersFound") 
+              : t("admin.noUsersInSystem")}
           </div>
         )}
 

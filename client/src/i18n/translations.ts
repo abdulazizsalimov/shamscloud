@@ -178,7 +178,10 @@ export const translations = {
       of: "из",
       users: "пользователей",
       quotaManagement: "Управление квотами",
-      dashboard: "Панель управления"
+      dashboard: "Панель управления",
+      createAccountInfo: "Создать новую учетную запись пользователя",
+      noUsersFound: "Пользователи, соответствующие вашим критериям поиска, не найдены.",
+      noUsersInSystem: "В системе не найдено пользователей."
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",
@@ -364,7 +367,10 @@ export const translations = {
       of: "of",
       users: "users",
       quotaManagement: "Quota Management",
-      dashboard: "Dashboard"
+      dashboard: "Dashboard",
+      createAccountInfo: "Create a new user account",
+      noUsersFound: "No users found matching your search criteria.",
+      noUsersInSystem: "No users found in the system."
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",
