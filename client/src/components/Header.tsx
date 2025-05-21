@@ -46,7 +46,7 @@ export function Header() {
                 <Link key={item.path} href={item.path}>
                   <div 
                     className={`px-3 py-2 rounded-md hover:bg-blue-50 hover:text-primary transition cursor-pointer ${
-                      isActive(item.path) ? "bg-blue-100 text-primary font-medium" : ""
+                      isActive(item.path) ? "bg-blue-100 text-primary font-medium dark:bg-blue-800 dark:text-white" : ""
                     }`}
                     aria-current={isActive(item.path) ? "page" : undefined}
                   >
@@ -61,7 +61,7 @@ export function Header() {
                   <Link href="/dashboard">
                     <div 
                       className={`px-3 py-2 rounded-md hover:bg-blue-50 hover:text-primary transition cursor-pointer ${
-                        isActive("/dashboard") ? "bg-blue-100 text-primary font-medium" : ""
+                        isActive("/dashboard") ? "bg-blue-100 text-primary font-medium dark:bg-blue-800 dark:text-white" : ""
                       }`}
                       aria-current={isActive("/dashboard") ? "page" : undefined}
                     >
@@ -73,7 +73,7 @@ export function Header() {
                     <Link href="/admin">
                       <div 
                         className={`px-3 py-2 rounded-md hover:bg-blue-50 hover:text-primary transition cursor-pointer ${
-                          isActive("/admin") ? "bg-blue-100 text-primary font-medium" : ""
+                          isActive("/admin") ? "bg-blue-100 text-primary font-medium dark:bg-blue-800 dark:text-white" : ""
                         }`}
                         aria-current={isActive("/admin") ? "page" : undefined}
                       >
