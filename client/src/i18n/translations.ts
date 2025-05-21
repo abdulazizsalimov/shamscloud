@@ -197,7 +197,12 @@ export const translations = {
       userDeleted: "Пользователь удален",
       userDeletedSuccess: "Пользователь успешно удален",
       failedToDeleteUser: "Не удалось удалить пользователя",
-      confirmDeleteUser: "Вы уверены, что хотите удалить этого пользователя? Это приведет к удалению всех его файлов и не может быть отменено."
+      confirmDeleteUser: "Вы уверены, что хотите удалить этого пользователя? Это приведет к удалению всех его файлов и не может быть отменено.",
+      deleteUser: "Удалить пользователя",
+      blockUser: "Заблокировать пользователя",
+      unblockUser: "Разблокировать пользователя",
+      makeAdmin: "Сделать администратором",
+      removeAdmin: "Удалить права администратора"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",
@@ -402,7 +407,12 @@ export const translations = {
       userDeleted: "User deleted",
       userDeletedSuccess: "The user has been deleted successfully",
       failedToDeleteUser: "Failed to delete user",
-      confirmDeleteUser: "Are you sure you want to delete this user? This will remove all their files and cannot be undone."
+      confirmDeleteUser: "Are you sure you want to delete this user? This will remove all their files and cannot be undone.",
+      deleteUser: "Delete User",
+      blockUser: "Block User",
+      unblockUser: "Unblock User",
+      makeAdmin: "Make Admin",
+      removeAdmin: "Remove Admin"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",

@@ -637,13 +637,13 @@ export function UserManagement() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteUser}
               className="bg-red-500 hover:bg-red-600"
               disabled={deleteUserMutation.isPending}
             >
-              {deleteUserMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteUserMutation.isPending ? t("common.loading") : t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
