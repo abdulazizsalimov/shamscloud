@@ -29,6 +29,16 @@ export default function Dashboard() {
   ]);
   const [isUploadVisible, setIsUploadVisible] = useState(false);
   
+  // Очищаем кэш запросов при монтировании компонента, чтобы предотвратить показ данных предыдущего пользователя
+  useEffect(() => {
+    // Очищаем кэш данных файлов
+    queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+    
+    // Сбрасываем путь и историю при входе
+    setCurrentPath(null);
+    setPathHistory([{ id: null, name: t("dashboard.myFiles") }]);
+  }, [queryClient, user?.id, t]);
+  
   // Redirect if not authenticated
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -84,12 +94,20 @@ export default function Dashboard() {
   
   // Upload files mutation
   const uploadFilesMutation = useMutation({
-    mutationFn: async (files: File[]) => {
+    mutationFn: async (files: FileList | File[]) => {
       const formData = new FormData();
       
-      files.forEach(file => {
-        formData.append('files', file);
-      });
+      // Обработка как FileList, так и File[]
+      if (files instanceof FileList) {
+        for (let i = 0; i < files.length; i++) {
+          formData.append('files', files[i]);
+        }
+      } else {
+        // Предполагаем, что это массив HTML5 File объектов, не схемы File
+        files.forEach(file => {
+          formData.append('files', file);
+        });
+      }
       
       if (currentPath !== null) {
         formData.append('parentId', currentPath.toString());
@@ -169,19 +187,119 @@ export default function Dashboard() {
   });
   
   // Handle folder click - navigate into folder
-  const handleFolderClick = (folderId: number) => {
-    const folder = files?.find(file => file.id === folderId);
-    if (folder) {
+  const handleFolderClick = async (folderId: number) => {
+    try {
+      // Находим папку в текущем списке
+      const folder = files?.find(file => file.id === folderId);
+      
+      if (!folder) {
+        toast({
+          title: t("common.error"),
+          description: "Failed to open folder: folder not found",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!folder.isFolder) {
+        toast({
+          title: t("common.error"),
+          description: "Selected item is not a folder",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Проверяем доступ к папке перед навигацией
+      try {
+        // Предварительно запросим содержимое папки, чтобы убедиться, что у нас есть доступ
+        const response = await fetch(`/api/files?parentId=${folderId}`, { 
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          // Если сервер вернул ошибку, показываем ее пользователю
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to access folder");
+        }
+      } catch (error) {
+        console.error("Folder access error:", error);
+        toast({
+          title: t("common.error"),
+          description: error instanceof Error ? error.message : "Failed to access folder",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Обновляем состояние и переходим в папку
+      console.log(`Navigating to folder: ${folder.name} (ID: ${folderId})`);
       setCurrentPath(folderId);
       setPathHistory(prev => [...prev, { id: folderId, name: folder.name }]);
+      
+      // Принудительно инвалидируем кеш для этой папки
+      queryClient.invalidateQueries({ queryKey: ["/api/files", folderId] });
+    } catch (error) {
+      console.error("Error navigating to folder:", error);
+      toast({
+        title: t("common.error"),
+        description: "Failed to navigate to the selected folder",
+        variant: "destructive"
+      });
     }
   };
   
   // Handle breadcrumb click - navigate to specific path
-  const handleBreadcrumbClick = (index: number) => {
-    const newPath = pathHistory[index];
-    setCurrentPath(newPath.id);
-    setPathHistory(prev => prev.slice(0, index + 1));
+  const handleBreadcrumbClick = async (index: number) => {
+    try {
+      const newPath = pathHistory[index];
+      
+      // Если переходим в корневую директорию (null) или обратно по пути
+      if (newPath.id === null || index < pathHistory.length - 1) {
+        console.log(`Navigating to path via breadcrumb: ${newPath.name} (ID: ${newPath.id})`);
+        
+        // Принудительно инвалидируем кеш для новой директории
+        queryClient.invalidateQueries({ queryKey: ["/api/files", newPath.id] });
+        
+        // Обновляем состояние
+        setCurrentPath(newPath.id);
+        setPathHistory(prev => prev.slice(0, index + 1));
+      } else {
+        // Дополнительная проверка для других случаев
+        try {
+          // Проверяем доступ к папке перед навигацией
+          const response = await fetch(`/api/files?parentId=${newPath.id}`, { 
+            credentials: 'include'
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to access folder");
+          }
+          
+          // Если всё в порядке, обновляем состояние
+          setCurrentPath(newPath.id);
+          setPathHistory(prev => prev.slice(0, index + 1));
+          
+          // Принудительно инвалидируем кеш
+          queryClient.invalidateQueries({ queryKey: ["/api/files", newPath.id] });
+        } catch (error) {
+          console.error("Breadcrumb navigation error:", error);
+          toast({
+            title: t("common.error"),
+            description: error instanceof Error ? error.message : "Failed to navigate to folder",
+            variant: "destructive"
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Breadcrumb navigation error:", error);
+      toast({
+        title: t("common.error"),
+        description: "Failed to navigate to the selected location",
+        variant: "destructive"
+      });
+    }
   };
   
   // Handle file download
@@ -243,7 +361,7 @@ export default function Dashboard() {
   };
   
   // Handle file upload
-  const handleUploadFiles = async (files: File[]) => {
+  const handleUploadFiles = async (files: FileList | File[]) => {
     await uploadFilesMutation.mutateAsync(files);
   };
   

@@ -368,37 +368,75 @@ export function setupFiles(app: Express, storageService: IStorage) {
   // Delete file
   app.delete("/api/files/:id", authGuard, async (req: Request, res: Response) => {
     try {
-      const fileId = parseInt(req.params.id);
+      // Безопасно получаем fileId
+      let fileId: number;
+      try {
+        fileId = parseInt(req.params.id);
+        if (isNaN(fileId)) {
+          return res.status(400).json({ message: "Invalid file ID format" });
+        }
+      } catch (e) {
+        return res.status(400).json({ message: "Invalid file ID" });
+      }
+      
       const userId = (req as any).user.id;
       
+      // Получаем информацию о файле
       const file = await storageService.getFile(fileId);
+      
+      // Логируем попытку для отладки
+      console.log(`User ${userId} is trying to delete file/folder ${fileId}:`, file);
       
       if (!file) {
         return res.status(404).json({ message: "File not found" });
       }
       
-      // Check if file belongs to user
+      // Проверяем, принадлежит ли файл пользователю
       if (file.userId !== userId) {
-        return res.status(403).json({ message: "You don't have permission to access this file" });
+        console.error(`Security issue: User ${userId} tried to delete file ${fileId} owned by ${file.userId}`);
+        return res.status(403).json({ message: "You don't have permission to delete this file" });
       }
       
-      // Delete the file from storage
-      if (!file.isFolder) {
-        const filePath = path.join(uploadsDir, file.path);
-        await fs.unlink(filePath).catch(console.error);
+      // Удаляем физический файл, если это не папка
+      if (!file.isFolder && file.path) {
+        try {
+          const filePath = path.join(uploadsDir, file.path);
+          console.log(`Attempting to delete physical file at: ${filePath}`);
+          
+          if (fs.existsSync(filePath)) {
+            await fs.unlink(filePath);
+            console.log(`Successfully deleted physical file at: ${filePath}`);
+          } else {
+            console.log(`Physical file not found at: ${filePath}`);
+          }
+        } catch (error) {
+          console.error(`Error deleting physical file: ${error}`);
+          // Продолжаем выполнение, даже если физический файл не удалось удалить
+        }
       }
       
-      // Delete file from database
-      const success = await storageService.deleteFile(fileId);
+      // Удаляем запись из базы данных
+      let success = false;
+      try {
+        success = await storageService.deleteFile(fileId);
+        console.log(`Database delete result for file ${fileId}: ${success}`);
+      } catch (error) {
+        console.error(`Error deleting file from database: ${error}`);
+        throw error;
+      }
       
       if (!success) {
-        return res.status(500).json({ message: "Failed to delete file" });
+        return res.status(500).json({ message: "Failed to delete file from database" });
       }
       
       res.status(200).json({ message: "File deleted successfully" });
     } catch (error) {
       console.error("Delete file error:", error);
-      res.status(500).json({ message: "An error occurred while deleting file" });
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message || "An error occurred while deleting file" });
+      } else {
+        res.status(500).json({ message: "An error occurred while deleting file" });
+      }
     }
   });
 }

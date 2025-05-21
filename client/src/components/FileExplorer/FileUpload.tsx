@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
 interface FileUploadProps {
-  onUploadFiles: (files: File[]) => Promise<void>;
+  onUploadFiles: (files: FileList | File[]) => Promise<void>;
   currentPath: number | null;
   disabled?: boolean;
 }
