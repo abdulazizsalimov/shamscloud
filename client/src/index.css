@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme transition styles */
+html {
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+*, *::before, *::after {
+  transition: background-color 0.5s ease, border-color 0.5s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Exclude transition for specific elements where it might cause issues */
+.no-transition, 
+.no-transition *,
+.no-transition *::before,
+.no-transition *::after,
+button:focus,
+a:focus {
+  transition: none !important;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 20 14.3% 4.1%;

@@ -5,6 +5,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useAccessibility } from "@/providers/AccessibilityProvider";
 import { Logo } from "@/components/Logo";
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Accessibility, Menu, User, LogOut, Globe } from "lucide-react";
 import {
