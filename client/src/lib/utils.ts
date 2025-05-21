@@ -7,17 +7,21 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Format file size to human readable format
- * @param bytes File size in bytes
+ * @param bytes File size in bytes or string
  * @returns Formatted file size
  */
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+export function formatFileSize(bytes: number | string): string {
+  // Если bytes имеет тип string, пытаемся преобразовать в число
+  const bytesNum = typeof bytes === 'string' ? parseFloat(bytes) : bytes;
+  
+  // Проверяем, что bytesNum является числом и не NaN
+  if (isNaN(bytesNum) || bytesNum === 0) return '0 Bytes';
   
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const i = Math.floor(Math.log(bytesNum) / Math.log(k));
   
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytesNum / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 /**
