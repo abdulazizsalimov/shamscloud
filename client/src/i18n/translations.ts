@@ -156,7 +156,8 @@ export const translations = {
       modified: "Изменено",
       actions: "Действия",
       folder: "Папка",
-      notAFolder: "Выбранный элемент не является папкой"
+      notAFolder: "Выбранный элемент не является папкой",
+      emptyFolder: "Эта папка пуста. Загрузите файлы или создайте новую папку."
     },
     admin: {
       userManagement: "Управление пользователями",
@@ -339,7 +340,8 @@ export const translations = {
       modified: "Modified",
       actions: "Actions",
       folder: "Folder",
-      notAFolder: "Selected item is not a folder"
+      notAFolder: "Selected item is not a folder",
+      emptyFolder: "This folder is empty. Upload files or create a new folder."
     },
     admin: {
       userManagement: "User Management",

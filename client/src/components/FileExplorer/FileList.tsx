@@ -131,8 +131,8 @@ export function FileList({
       {files.length === 0 ? (
         <div className="p-8 text-center text-gray-500 dark:text-gray-400">
           {currentPath === null
-            ? "Your cloud storage is empty. Upload files to get started."
-            : "This folder is empty. Upload files or create a new folder."}
+            ? t("notifications.emptyStorage")
+            : t("dashboard.emptyFolder")}
         </div>
       ) : (
         files.map((file) => (
