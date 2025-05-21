@@ -80,13 +80,13 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/files", currentPath] });
       toast({
         title: t("common.success"),
-        description: "Folder created successfully"
+        description: t("notifications.createFolderSuccess")
       });
     },
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error.message || "Failed to create folder",
+        description: error.message || t("notifications.createFolderFailed"),
         variant: "destructive"
       });
     }
@@ -130,14 +130,14 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/files", currentPath] });
       toast({
         title: t("common.success"),
-        description: "Files uploaded successfully"
+        description: t("notifications.uploadSuccess")
       });
       setIsUploadVisible(false);
     },
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error.message || "Failed to upload files",
+        description: error.message || t("notifications.uploadFailed"),
         variant: "destructive"
       });
     }
@@ -152,13 +152,13 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/files", currentPath] });
       toast({
         title: t("common.success"),
-        description: "File deleted successfully"
+        description: t("notifications.deleteSuccess")
       });
     },
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error.message || "Failed to delete file",
+        description: error.message || t("notifications.deleteFailed"),
         variant: "destructive"
       });
     }
@@ -174,13 +174,13 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/files", currentPath] });
       toast({
         title: t("common.success"),
-        description: "File renamed successfully"
+        description: t("notifications.renameSuccess")
       });
     },
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error.message || "Failed to rename file",
+        description: error.message || t("notifications.renameFailed"),
         variant: "destructive"
       });
     }
