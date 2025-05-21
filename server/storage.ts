@@ -1,4 +1,5 @@
-import { users, type User, type InsertUser, files, type File, type InsertFile } from "@shared/schema";
+import { users, type User, type InsertUser, files, type File, type InsertFile, type VerificationToken } from "@shared/schema";
+import { nanoid } from "nanoid";
 import path from "path";
 import bcrypt from "bcryptjs";
 
@@ -33,15 +34,19 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private files: Map<number, File>;
+  private verificationTokens: Map<number, VerificationToken>;
   private userId: number;
   private fileId: number;
+  private tokenId: number;
   private filesDir: string;
 
   constructor() {
     this.users = new Map();
     this.files = new Map();
+    this.verificationTokens = new Map();
     this.userId = 1;
     this.fileId = 1;
+    this.tokenId = 1;
     this.filesDir = path.join(process.cwd(), "uploads");
     
     // Add admin user by default
@@ -57,9 +62,10 @@ export class MemStorage implements IStorage {
       name: "Admin",
       password: adminPassword,
       role: "admin",
-      quota: 1073741824 * 10, // 10GB
-      usedSpace: 0,
+      quota: "10737418240", // 10GB
+      usedSpace: "0",
       isBlocked: false,
+      isEmailVerified: true, // Администратор сразу верифицирован
       createdAt: new Date()
     };
     this.users.set(admin.id, admin);
@@ -72,9 +78,10 @@ export class MemStorage implements IStorage {
       name: "Demo User",
       password: demoPassword,
       role: "user",
-      quota: 1073741824 * 5, // 5GB
-      usedSpace: 0,
+      quota: "5368709120", // 5GB
+      usedSpace: "0",
       isBlocked: false,
+      isEmailVerified: true, // Демо-пользователь тоже верифицирован
       createdAt: new Date()
     };
     this.users.set(demoUser.id, demoUser);
@@ -155,8 +162,9 @@ export class MemStorage implements IStorage {
       ...userData, 
       id,
       password: hashedPassword,
-      usedSpace: 0,
+      usedSpace: "0",
       isBlocked: false,
+      isEmailVerified: false, // По умолчанию новые пользователи не верифицированы
       createdAt: new Date()
     };
     
@@ -360,6 +368,52 @@ export class MemStorage implements IStorage {
     }
     
     return result;
+  }
+  
+  // Verification operations
+  async createVerificationToken(userId: number, type: string, expiresInHours: number): Promise<VerificationToken> {
+    const id = this.tokenId++;
+    const token = nanoid(32); // Generate a unique token
+    
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + expiresInHours);
+    
+    const verificationToken: VerificationToken = {
+      id,
+      userId,
+      token,
+      type,
+      expiresAt,
+      createdAt: new Date()
+    };
+    
+    this.verificationTokens.set(id, verificationToken);
+    return verificationToken;
+  }
+  
+  async getVerificationToken(token: string): Promise<VerificationToken | undefined> {
+    return Array.from(this.verificationTokens.values()).find(
+      (t) => t.token === token
+    );
+  }
+  
+  async verifyUser(userId: number): Promise<User | undefined> {
+    const user = this.users.get(userId);
+    if (!user) return undefined;
+    
+    // Set the user as verified
+    const updatedUser = { 
+      ...user, 
+      isEmailVerified: true 
+    };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async deleteVerificationToken(id: number): Promise<boolean> {
+    if (!this.verificationTokens.has(id)) return false;
+    return this.verificationTokens.delete(id);
   }
 }
 
