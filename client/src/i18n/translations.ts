@@ -278,6 +278,7 @@ export const translations = {
       dark: "Dark",
       highContrast: "High Contrast",
       blackWhite: "Black & White",
+      blackWhiteMode: "Black & White Mode",
       fontSize: "Font Size:",
       normal: "Normal",
       large: "Large",
