@@ -514,44 +514,89 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteFile(id: number): Promise<boolean> {
-    // Проверяем, что файл существует
-    const file = await this.getFile(id);
-    if (!file) {
+    try {
+      console.log(`Starting delete operation for file ID: ${id}`);
+      
+      // Проверяем, что файл существует
+      const file = await this.getFile(id);
+      if (!file) {
+        console.log(`File with ID ${id} not found`);
+        return false;
+      }
+      
+      console.log(`Found file for deletion:`, file);
+      
+      // Если это папка, удаляем все вложенные файлы и папки
+      if (file.isFolder) {
+        console.log(`File ${id} is a folder, recursively deleting children`);
+        
+        try {
+          const children = await db.select().from(files).where(eq(files.parent_id, id));
+          console.log(`Found ${children.length} child files/folders to delete`);
+          
+          for (const child of children) {
+            await this.deleteFile(child.id);
+          }
+        } catch (error) {
+          console.error(`Error fetching or deleting child files:`, error);
+        }
+      }
+      
+      // Обновляем использованное пространство пользователя
+      if (!file.isFolder) {
+        try {
+          const user = await this.getUser(file.userId);
+          if (user) {
+            console.log(`Updating user ${user.id} used space (current: ${user.usedSpace}, file size: ${file.size})`);
+            
+            const fileSize = parseInt(file.size, 10) || 0;
+            const currentUsed = parseInt(user.usedSpace, 10) || 0;
+            const newUsedSpace = Math.max(0, currentUsed - fileSize).toString();
+            
+            console.log(`New used space will be: ${newUsedSpace}`);
+            await this.updateUser(user.id, { usedSpace: newUsedSpace });
+          }
+        } catch (error) {
+          console.error(`Error updating user's used space:`, error);
+          // Продолжаем выполнение даже при ошибке обновления пространства
+        }
+      }
+      
+      // Удаляем физический файл, если это не папка
+      if (!file.isFolder && file.path) {
+        try {
+          console.log(`Checking physical file at path: ${file.path}`);
+          const fullPath = path.join(process.cwd(), file.path);
+          
+          if (fs.existsSync(fullPath)) {
+            console.log(`Physical file found at ${fullPath}, deleting...`);
+            fs.unlinkSync(fullPath);
+            console.log(`Physical file deleted successfully`);
+          } else {
+            console.log(`Physical file not found at ${fullPath}, skipping deletion`);
+          }
+        } catch (error) {
+          console.error(`Error deleting physical file:`, error);
+          // Продолжаем выполнение даже при ошибке удаления физического файла
+        }
+      }
+      
+      // Удаляем запись из базы данных
+      try {
+        console.log(`Deleting file record from database, ID: ${id}`);
+        await db.delete(files).where(eq(files.id, id));
+        console.log(`File record deleted successfully from database`);
+      } catch (error) {
+        console.error(`Error deleting file record from database:`, error);
+        throw error; // Бросаем ошибку, так как это критическая операция
+      }
+      
+      console.log(`File deletion completed successfully for ID: ${id}`);
+      return true;
+    } catch (error) {
+      console.error(`Unexpected error in deleteFile method:`, error);
       return false;
     }
-    
-    // Если это папка, удаляем все вложенные файлы и папки
-    if (file.isFolder) {
-      const children = await db.execute(sql`
-        SELECT * FROM files WHERE parent_id = ${id}
-      `);
-      
-      for (const child of children.rows) {
-        await this.deleteFile(child.id);
-      }
-    }
-    
-    // Обновляем использованное пространство пользователя
-    if (!file.isFolder) {
-      const user = await this.getUser(file.userId);
-      if (user) {
-        const newUsedSpace = Math.max(0, parseInt(user.usedSpace, 10) - parseInt(file.size, 10)).toString();
-        await this.updateUser(user.id, { usedSpace: newUsedSpace });
-      }
-    }
-    
-    // Удаляем физический файл, если это не папка
-    if (!file.isFolder && file.path) {
-      const fullPath = path.join(process.cwd(), file.path);
-      if (fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
-      }
-    }
-    
-    // Удаляем запись из базы данных
-    await db.delete(files).where(eq(files.id, id));
-    
-    return true;
   }
 
   async getFileHierarchy(fileId: number): Promise<File[]> {
