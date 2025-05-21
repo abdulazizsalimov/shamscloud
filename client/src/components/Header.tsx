@@ -1,0 +1,193 @@
+import { useState } from "react";
+import { useLocation, Link } from "wouter";
+import { useLocale } from "@/providers/LocaleProvider";
+import { useAuth } from "@/providers/AuthProvider";
+import { useAccessibility } from "@/providers/AccessibilityProvider";
+import { Logo } from "@/components/Logo";
+import { AccessibilityPanel } from "@/components/AccessibilityPanel";
+import { Button } from "@/components/ui/button";
+import { Accessibility, Menu, User, LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+export function Header() {
+  const [location] = useLocation();
+  const { t } = useLocale();
+  const { user, logout, isAdmin } = useAuth();
+  const { togglePanel } = useAccessibility();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const isActive = (path: string) => location === path;
+  
+  const navItems = [
+    { label: t("common.home"), path: "/" },
+    { label: t("common.about"), path: "/about" },
+    { label: t("common.contact"), path: "/contact" },
+  ];
+
+  return (
+    <header className="bg-white dark:bg-gray-800 shadow-md">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
+          <Logo />
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-4">
+            {navItems.map((item) => (
+              <Link key={item.path} href={item.path}>
+                <a 
+                  className={`px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition ${
+                    isActive(item.path) ? "bg-blue-100 text-primary" : ""
+                  }`}
+                  aria-current={isActive(item.path) ? "page" : undefined}
+                >
+                  {item.label}
+                </a>
+              </Link>
+            ))}
+            
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <Link href="/dashboard">
+                    <DropdownMenuItem>
+                      {t("dashboard.myFiles")}
+                    </DropdownMenuItem>
+                  </Link>
+                  {isAdmin && (
+                    <Link href="/admin">
+                      <DropdownMenuItem>
+                        {t("admin.dashboard")}
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => logout()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t("common.logout")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/auth">
+                <a
+                  className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition"
+                >
+                  {t("common.login")}
+                </a>
+              </Link>
+            )}
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={togglePanel}
+              aria-label={t("common.accessibilitySettings")}
+            >
+              <Accessibility className="h-5 w-5" />
+            </Button>
+          </nav>
+          
+          {/* Mobile Navigation Button */}
+          <div className="flex items-center space-x-2 md:hidden">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={togglePanel}
+              aria-label={t("common.accessibilitySettings")}
+            >
+              <Accessibility className="h-5 w-5" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          </div>
+        </div>
+        
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-4 py-4 border-t border-gray-200 dark:border-gray-700">
+            <nav className="flex flex-col space-y-2">
+              {navItems.map((item) => (
+                <Link key={item.path} href={item.path}>
+                  <a 
+                    className={`px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition ${
+                      isActive(item.path) ? "bg-blue-100 text-primary" : ""
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    aria-current={isActive(item.path) ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </Link>
+              ))}
+              
+              {user ? (
+                <>
+                  <Link href="/dashboard">
+                    <a 
+                      className="px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {t("dashboard.myFiles")}
+                    </a>
+                  </Link>
+                  {isAdmin && (
+                    <Link href="/admin">
+                      <a 
+                        className="px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {t("admin.dashboard")}
+                      </a>
+                    </Link>
+                  )}
+                  <button
+                    className="px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition text-left flex items-center"
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t("common.logout")}</span>
+                  </button>
+                </>
+              ) : (
+                <Link href="/auth">
+                  <a
+                    className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition block text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {t("common.login")}
+                  </a>
+                </Link>
+              )}
+            </nav>
+          </div>
+        )}
+      </div>
+      
+      <AccessibilityPanel />
+    </header>
+  );
+}
