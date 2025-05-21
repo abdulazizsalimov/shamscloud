@@ -10,9 +10,9 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   role: text("role").notNull().default("user"),
   quota: text("quota").notNull().default("10737418240"), // 10GB in bytes as string
-  usedSpace: text("used_space").notNull().default("0"), // Used space as string
-  isBlocked: boolean("is_blocked").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  used_space: text("used_space").notNull().default("0"), // Used space as string
+  is_blocked: boolean("is_blocked").notNull().default(false),
+  created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
 // File schema
@@ -22,11 +22,11 @@ export const files = pgTable("files", {
   path: text("path").notNull(),
   type: text("type").notNull(),
   size: text("size").notNull().default("0"), // Size as string
-  isFolder: boolean("is_folder").notNull().default(false),
-  parentId: integer("parent_id"),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  is_folder: boolean("is_folder").notNull().default(false),
+  parent_id: integer("parent_id"),
+  user_id: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow(),
 });
 
 // Insert schemas
@@ -48,10 +48,33 @@ export const insertFileSchema = createInsertSchema(files).pick({
   userId: true,
 });
 
-// Types
-export type User = typeof users.$inferSelect;
+// Types - с ручной настройкой для совместимости с базой данных
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  password: string;
+  role: string;
+  quota: string;
+  usedSpace: string;
+  isBlocked: boolean;
+  createdAt: Date;
+}
+
+export interface File {
+  id: number;
+  name: string;
+  path: string;
+  type: string;
+  size: string;
+  isFolder: boolean;
+  parentId: number | null;
+  userId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type File = typeof files.$inferSelect;
 export type InsertFile = z.infer<typeof insertFileSchema>;
 
 // Extended schemas for validation
