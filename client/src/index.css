@@ -51,6 +51,11 @@ a:focus {
   --border: 217 32.6% 25%;
 }
 
+/* Add padding for fixed header */
+main {
+  padding-top: 4rem; /* Примерное значение, соответствующее высоте шапки */
+}
+
 /* Custom dark mode overrides */
 .dark button {
   color: hsl(210 40% 98%); 
