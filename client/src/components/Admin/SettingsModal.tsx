@@ -102,54 +102,71 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       const totalQuotaBytes = Math.round(parseFloat(values.totalQuota) * 1024 * 1024 * 1024);
       const defaultQuotaBytes = Math.round(parseFloat(values.defaultQuota) * 1024 * 1024 * 1024);
       
-      console.log("Submitting settings:", {
-        totalQuota: totalQuotaBytes.toString(),
-        defaultQuota: defaultQuotaBytes.toString(),
-      });
-      
-      // Use direct fetch instead of apiRequest to handle errors more explicitly
-      const response = await fetch("/api/admin/settings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          totalQuota: totalQuotaBytes.toString(),
-          defaultQuota: defaultQuotaBytes.toString(),
-        }),
-      });
-      
-      if (response.ok) {
-        toast({
-          title: t("admin.settingsSaved"),
-          description: t("admin.settingsSavedMessage"),
+      // Use XMLHttpRequest for better error handling and tracking
+      const saveSettings = () => {
+        return new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/admin/settings", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.withCredentials = true;
+          
+          xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve();
+            } else {
+              console.error("Server error status:", xhr.status);
+              console.error("Server error response:", xhr.responseText);
+              reject(new Error(xhr.responseText || `Error: ${xhr.status}`));
+            }
+          };
+          
+          xhr.onerror = function() {
+            console.error("Network error occurred");
+            reject(new Error("Network error occurred"));
+          };
+          
+          const payload = JSON.stringify({
+            totalQuota: totalQuotaBytes.toString(),
+            defaultQuota: defaultQuotaBytes.toString(),
+          });
+          
+          console.log("Sending settings payload:", payload);
+          xhr.send(payload);
         });
-        // Refresh the settings to show the new values
+      };
+      
+      await saveSettings();
+      
+      // Success path
+      toast({
+        title: t("admin.settingsSaved"),
+        description: t("admin.settingsSavedMessage"),
+      });
+      
+      // Refresh the settings after a short delay
+      setTimeout(() => {
         loadSettings();
-      } else {
-        const errorText = await response.text();
-        console.error("Server error response:", errorText);
-        let errorMessage = "Failed to save settings";
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || errorMessage;
-        } catch (e) {
-          // If can't parse JSON, use the raw error text
-          errorMessage = errorText || errorMessage;
-        }
-        
-        toast({
-          title: t("common.error"),
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
+      }, 500);
+      
     } catch (error) {
       console.error("Error saving settings:", error);
+      
+      let errorMessage = t("admin.settingsSaveError");
+      if (error instanceof Error) {
+        try {
+          const errorData = JSON.parse(error.message);
+          if (errorData && errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (e) {
+          // If can't parse as JSON, use the raw message
+          errorMessage = error.message || errorMessage;
+        }
+      }
+      
       toast({
         title: t("common.error"),
-        description: t("admin.settingsSaveError"),
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
