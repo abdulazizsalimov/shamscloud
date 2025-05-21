@@ -47,6 +47,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   role: true,
   quota: true,
+  is_blocked: true,
+  is_email_verified: true,
 });
 
 export const insertFileSchema = createInsertSchema(files).pick({

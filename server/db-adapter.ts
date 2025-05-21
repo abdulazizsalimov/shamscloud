@@ -11,6 +11,7 @@ export function adaptUserFromDb(dbUser: any): User {
     quota: dbUser.quota,
     usedSpace: dbUser.used_space,
     isBlocked: dbUser.is_blocked,
+    isEmailVerified: dbUser.is_email_verified,
     createdAt: dbUser.created_at
   };
 }
@@ -27,6 +28,7 @@ export function adaptUserToDb(user: Partial<User>): any {
   if (user.quota !== undefined) result.quota = user.quota;
   if (user.usedSpace !== undefined) result.used_space = user.usedSpace;
   if (user.isBlocked !== undefined) result.is_blocked = user.isBlocked;
+  if (user.isEmailVerified !== undefined) result.is_email_verified = user.isEmailVerified;
   
   return result;
 }

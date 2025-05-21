@@ -322,9 +322,8 @@ export function setupAuth(app: Express, storage: IStorage) {
         password: hashedPassword,
         role: "user",
         quota: defaultQuota,
-        usedSpace: "0",
-        isBlocked: false,
-        isEmailVerified: true // Auto-verify Google users
+        is_blocked: false,
+        is_email_verified: true // Auto-verify Google users
       });
       
       // Set session
