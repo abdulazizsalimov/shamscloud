@@ -103,7 +103,7 @@ export function LoginForm({ onShowRegister, onShowReset }: LoginFormProps) {
             />
             <label 
               htmlFor="remember-me" 
-              className="text-sm text-gray-600 dark:text-gray-300"
+              className="text-sm text-gray-600 dark:text-gray-400"
             >
               {t("auth.rememberMe")}
             </label>
@@ -128,7 +128,7 @@ export function LoginForm({ onShowRegister, onShowReset }: LoginFormProps) {
         </Button>
 
         <div className="text-center mt-4">
-          <span className="text-sm text-gray-600 dark:text-gray-300">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             {t("common.or")}
           </span>
           <Button 

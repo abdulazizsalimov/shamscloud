@@ -107,6 +107,11 @@ main {
   color: hsl(214 32% 91%);
 }
 
+/* Исключение для дивов внутри карточек формы */
+.dark .card div {
+  color: inherit;
+}
+
 /* Улучшенная видимость для ссылок */
 .dark a {
   color: hsl(217 91.2% 70%);
@@ -115,6 +120,45 @@ main {
 .dark a:hover {
   color: hsl(217 91.2% 80%);
   text-decoration: underline;
+}
+
+/* Улучшение контраста для форм в темной теме */
+.dark input, 
+.dark select, 
+.dark textarea {
+  background-color: hsl(222 47% 11%) !important;
+  border-color: hsl(217 32.6% 22%) !important;
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark input::placeholder {
+  color: hsl(214 32% 60%) !important;
+}
+
+/* Улучшение контраста для вкладок в темной теме */
+.dark [role="tablist"] {
+  background-color: hsla(217, 33%, 17%, 0.8) !important;
+}
+
+.dark [role="tab"] {
+  color: hsl(214 32% 80%) !important;
+}
+
+.dark [role="tab"][data-state="active"] {
+  color: hsl(210 40% 98%) !important;
+  background-color: hsl(217 32.6% 22%) !important;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: hsl(217 91.2% 60%) !important;
+  box-shadow: 0 0 0 2px hsla(217, 91.2%, 60%, 0.3) !important;
+}
+
+.dark .card {
+  background-color: hsl(222 47% 11%) !important;
+  border: 1px solid hsl(217 32.6% 20%) !important;
 }
 
 /* Улучшение контраста для кнопок в шапке */
