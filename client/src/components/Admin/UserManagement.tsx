@@ -489,18 +489,18 @@ export function UserManagement() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => openQuotaDialog(user)}>
                       <BadgePlus className="mr-2 h-4 w-4" />
-                      <span>Set Quota</span>
+                      <span>{t("admin.quotaManagement")}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleToggleRole(user)}>
                       {user.role === "admin" ? (
                         <>
                           <ShieldOff className="mr-2 h-4 w-4" />
-                          <span>Remove Admin</span>
+                          <span>{t("admin.removeAdmin")}</span>
                         </>
                       ) : (
                         <>
                           <Shield className="mr-2 h-4 w-4" />
-                          <span>Make Admin</span>
+                          <span>{t("admin.makeAdmin")}</span>
                         </>
                       )}
                     </DropdownMenuItem>
@@ -508,12 +508,12 @@ export function UserManagement() {
                       {user.isBlocked ? (
                         <>
                           <UserCheck className="mr-2 h-4 w-4" />
-                          <span>Unblock User</span>
+                          <span>{t("admin.unblockUser")}</span>
                         </>
                       ) : (
                         <>
                           <UserX className="mr-2 h-4 w-4" />
-                          <span>Block User</span>
+                          <span>{t("admin.blockUser")}</span>
                         </>
                       )}
                     </DropdownMenuItem>
@@ -523,7 +523,7 @@ export function UserManagement() {
                       className="text-red-500 focus:text-red-500"
                     >
                       <Trash className="mr-2 h-4 w-4" />
-                      <span>{t("common.delete")}</span>
+                      <span>{t("admin.deleteUser")}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
