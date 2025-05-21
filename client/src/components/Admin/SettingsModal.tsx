@@ -149,23 +149,23 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         </DialogHeader>
         
         <div className="flex mt-4">
-          {/* Left sidebar with tabs */}
-          <div className="w-1/3 pr-4 border-r">
-            <TabsList className="flex flex-col items-stretch h-auto">
-              <TabsTrigger
-                value="quota"
-                onClick={() => setActiveTab("quota")}
-                className={`justify-start px-4 py-2 mb-1 ${activeTab === "quota" ? "bg-blue-100 dark:bg-blue-800" : ""}`}
-              >
-                {t("admin.quotaSettings")}
-              </TabsTrigger>
-              {/* Future tab options could be added here */}
-            </TabsList>
-          </div>
-          
-          {/* Right content area */}
-          <div className="w-2/3 pl-4">
-            <Tabs value={activeTab} className="w-full">
+          <Tabs value={activeTab} className="w-full flex">
+            {/* Left sidebar with tabs */}
+            <div className="w-1/3 pr-4 border-r">
+              <TabsList className="flex flex-col items-stretch h-auto">
+                <TabsTrigger
+                  value="quota"
+                  onClick={() => setActiveTab("quota")}
+                  className={`justify-start px-4 py-2 mb-1 ${activeTab === "quota" ? "bg-blue-100 dark:bg-blue-800" : ""}`}
+                >
+                  {t("admin.quotaSettings")}
+                </TabsTrigger>
+                {/* Future tab options could be added here */}
+              </TabsList>
+            </div>
+            
+            {/* Right content area */}
+            <div className="w-2/3 pl-4">
               <TabsContent value="quota" className="m-0">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -233,8 +233,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   </form>
                 </Form>
               </TabsContent>
-            </Tabs>
-          </div>
+            </div>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>
