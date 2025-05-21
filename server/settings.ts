@@ -21,7 +21,7 @@ const systemSettingsSchema = z.object({
 });
 
 // Settings file path
-const SETTINGS_FILE = path.join(__dirname, "../data/settings.json");
+const SETTINGS_FILE = path.join(process.cwd(), "data/settings.json");
 
 // Default settings
 const DEFAULT_SETTINGS = {
@@ -86,7 +86,7 @@ async function calculateUsedSpace() {
 function getAvailableDiskSpace() {
   try {
     // Get available disk space where uploads are stored
-    const stats = fs.statfsSync(path.join(__dirname, "../uploads"));
+    const stats = fs.statfsSync(path.join(process.cwd(), "uploads"));
     const availableBytes = stats.bavail * stats.bsize;
     return availableBytes;
   } catch (error) {
