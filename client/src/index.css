@@ -21,6 +21,107 @@ a:focus {
   transition: none !important;
 }
 
+/* Dark mode enhancements */
+.dark {
+  /* Base background & text colors */
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  
+  /* Improved contrast for buttons and interactive elements */
+  --primary: 217 91.2% 59.8%;
+  --primary-foreground: 210 40% 98%;
+  
+  /* Better contrast for card backgrounds */
+  --card: 222 47% 15%;
+  --card-foreground: 210 40% 98%;
+  
+  /* Popover/dropdown backgrounds */
+  --popover: 222 47% 13%;
+  --popover-foreground: 210 40% 98%;
+  
+  /* Button hover states */
+  --primary-hover: 217 91.2% 65%;
+  --accent-hover: 217 91.2% 65%;
+  
+  /* Improved muted colors for better contrast */
+  --muted: 217 32.6% 25%;
+  --muted-foreground: 215 20.2% 75.1%;
+  
+  /* Border colors */
+  --border: 217 32.6% 25%;
+}
+
+/* Custom dark mode overrides */
+.dark button {
+  color: hsl(210 40% 98%); 
+}
+
+.dark button.bg-primary {
+  background-color: hsl(217 91.2% 59.8%);
+  color: white;
+}
+
+.dark button.bg-primary:hover {
+  background-color: hsl(217 91.2% 65%);
+}
+
+.dark button[data-variant="ghost"] {
+  background-color: transparent;
+  color: hsl(210 40% 98%);
+}
+
+.dark button[data-variant="ghost"]:hover {
+  background-color: hsla(217, 33%, 25%, 0.8);
+}
+
+.dark button svg, 
+.dark .icon {
+  color: hsl(210 40% 98%);
+}
+
+/* Улучшенный контраст для панелей выпадающего меню */
+.dark [data-radix-popper-content-wrapper] {
+  background-color: hsl(222 47% 15%);
+  border-color: hsl(217 32.6% 30%);
+}
+
+.dark [role="menuitem"] {
+  color: hsl(210 40% 98%);
+}
+
+.dark [role="menuitem"]:hover {
+  background-color: hsl(217 32.6% 25%);
+}
+
+/* Better contrast for texts in dark mode */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: hsl(210 40% 98%);
+}
+
+.dark p, .dark span, .dark div {
+  color: hsl(214 32% 91%);
+}
+
+/* Улучшенная видимость для ссылок */
+.dark a {
+  color: hsl(217 91.2% 70%);
+}
+
+.dark a:hover {
+  color: hsl(217 91.2% 80%);
+  text-decoration: underline;
+}
+
+/* Улучшение контраста для кнопок в шапке */
+.dark header button {
+  color: hsl(210 40% 98%);
+}
+
+.dark header {
+  background-color: hsl(222 47% 11%);
+  border-bottom: 1px solid hsl(217 32.6% 20%);
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 20 14.3% 4.1%;

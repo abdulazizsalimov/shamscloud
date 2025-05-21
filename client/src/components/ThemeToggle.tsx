@@ -61,7 +61,7 @@ export function ThemeToggle() {
         {isDark ? (
           <Sun size={20} className="text-yellow-400" />
         ) : (
-          <Moon size={20} className="text-slate-700" />
+          <Moon size={20} className="text-primary" />
         )}
       </div>
     </Button>
