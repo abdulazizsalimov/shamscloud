@@ -243,7 +243,7 @@ export default function Dashboard() {
       console.error("Error navigating to folder:", error);
       toast({
         title: t("common.error"),
-        description: "Failed to navigate to the selected folder",
+        description: t("notifications.navigateError"),
         variant: "destructive"
       });
     }

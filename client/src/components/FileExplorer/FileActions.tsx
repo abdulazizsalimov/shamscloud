@@ -79,13 +79,13 @@ export function FileActions({
             <DialogHeader>
               <DialogTitle>{t("dashboard.newFolder")}</DialogTitle>
               <DialogDescription>
-                Enter a name for the new folder
+                {t("dashboard.enterNewName")}
               </DialogDescription>
             </DialogHeader>
             <Input
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="Folder name"
+              placeholder={t("dashboard.folder")}
               autoFocus
             />
             <DialogFooter>
