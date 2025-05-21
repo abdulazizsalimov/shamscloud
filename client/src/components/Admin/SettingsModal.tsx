@@ -107,11 +107,13 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         defaultQuota: defaultQuotaBytes.toString(),
       });
       
-      const response = await apiRequest("/api/admin/settings", {
+      // Use direct fetch instead of apiRequest to handle errors more explicitly
+      const response = await fetch("/api/admin/settings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           totalQuota: totalQuotaBytes.toString(),
           defaultQuota: defaultQuotaBytes.toString(),
@@ -123,10 +125,25 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           title: t("admin.settingsSaved"),
           description: t("admin.settingsSavedMessage"),
         });
+        // Refresh the settings to show the new values
+        loadSettings();
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Server response:", errorData);
-        throw new Error(errorData.message || "Failed to save settings");
+        const errorText = await response.text();
+        console.error("Server error response:", errorText);
+        let errorMessage = "Failed to save settings";
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If can't parse JSON, use the raw error text
+          errorMessage = errorText || errorMessage;
+        }
+        
+        toast({
+          title: t("common.error"),
+          description: errorMessage,
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error saving settings:", error);
