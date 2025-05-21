@@ -154,7 +154,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: user || null,
         status,
         login,
         register,

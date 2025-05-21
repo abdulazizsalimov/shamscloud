@@ -29,8 +29,9 @@ export default function EmailVerification() {
     const verifyEmail = async () => {
       try {
         const response = await apiRequest("GET", `/api/auth/verify-email?token=${token}`);
+        const data = await response.json();
         setStatus("success");
-        setMessage(response?.message || t("auth.verification.success"));
+        setMessage(data?.message || t("auth.verification.success"));
         
         // Обновляем информацию о пользователе, если он уже авторизован
         await refreshUser();
