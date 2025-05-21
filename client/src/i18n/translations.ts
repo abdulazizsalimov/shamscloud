@@ -226,6 +226,7 @@ export const translations = {
       createFolderSuccess: "Folder created successfully",
       createFolderFailed: "Failed to create folder",
       downloadFailed: "Failed to download file",
+      loadError: "Failed to load files",
       shareSuccess: "Link copied to clipboard",
       shareFailed: "Failed to share file",
       navigateError: "Failed to navigate to selected location",

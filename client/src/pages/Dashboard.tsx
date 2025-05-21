@@ -495,7 +495,7 @@ export default function Dashboard() {
                 className="mt-2"
                 onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/files", currentPath] })}
               >
-                Try Again
+                {t("common.tryAgain")}
               </Button>
             </div>
           )}
