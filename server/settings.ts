@@ -138,25 +138,38 @@ export function setupSettings(app: Express, storage: IStorage) {
   // Update system settings
   app.post("/api/admin/settings", adminGuard, async (req: Request, res: Response) => {
     try {
+      console.log("Received settings data:", req.body);
+      
+      // Validate the incoming data
       const validatedData = systemSettingsSchema.parse(req.body);
+      console.log("Validated settings data:", validatedData);
+      
       const currentSettings = loadSettings();
+      console.log("Current settings:", currentSettings);
       
       const newSettings = {
         ...currentSettings,
         totalQuota: validatedData.totalQuota,
         defaultQuota: validatedData.defaultQuota,
+        lastUpdated: new Date().toISOString()
       };
+      console.log("New settings to save:", newSettings);
       
-      const success = saveSettings(newSettings);
+      // Make sure settings directory exists
+      ensureSettingsDirectory();
       
-      if (success) {
+      // Save the settings directly to avoid any issues
+      try {
+        fs.writeFileSync(SETTINGS_FILE, JSON.stringify(newSettings, null, 2));
+        console.log("Settings saved successfully");
         return res.status(200).json({ message: "Settings updated successfully" });
-      } else {
-        return res.status(500).json({ message: "Failed to save settings" });
+      } catch (writeError) {
+        console.error("Error writing settings file:", writeError);
+        return res.status(500).json({ message: "Failed to save settings file" });
       }
     } catch (error) {
       console.error("Error updating settings:", error);
-      return res.status(400).json({ message: "Invalid settings data" });
+      return res.status(400).json({ message: "Invalid settings data", error: String(error) });
     }
   });
 }

@@ -100,10 +100,18 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     try {
       // Convert GB to bytes for the API
       const totalQuotaBytes = Math.round(parseFloat(values.totalQuota) * 1024 * 1024 * 1024);
-      const defaultQuotaBytes = Math.round(parseInt(values.defaultQuota) * 1024 * 1024 * 1024);
+      const defaultQuotaBytes = Math.round(parseFloat(values.defaultQuota) * 1024 * 1024 * 1024);
+      
+      console.log("Submitting settings:", {
+        totalQuota: totalQuotaBytes.toString(),
+        defaultQuota: defaultQuotaBytes.toString(),
+      });
       
       const response = await apiRequest("/api/admin/settings", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           totalQuota: totalQuotaBytes.toString(),
           defaultQuota: defaultQuotaBytes.toString(),
@@ -116,7 +124,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           description: t("admin.settingsSavedMessage"),
         });
       } else {
-        throw new Error("Failed to save settings");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Server response:", errorData);
+        throw new Error(errorData.message || "Failed to save settings");
       }
     } catch (error) {
       console.error("Error saving settings:", error);
