@@ -159,6 +159,15 @@ main {
 .dark .card {
   background-color: hsl(222 47% 11%) !important;
   border: 1px solid hsl(217 32.6% 20%) !important;
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark form {
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark form label {
+  color: hsl(214 32% 91%) !important;
 }
 
 /* Улучшение контраста для кнопок в шапке */
