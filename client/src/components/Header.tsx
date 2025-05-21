@@ -83,11 +83,11 @@ export function Header() {
               </DropdownMenu>
             ) : (
               <Link href="/auth">
-                <a
-                  className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition"
+                <div
+                  className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition cursor-pointer"
                 >
                   {t("common.login")}
-                </a>
+                </div>
               </Link>
             )}
             
@@ -174,12 +174,12 @@ export function Header() {
                 </>
               ) : (
                 <Link href="/auth">
-                  <a
-                    className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition block text-center"
+                  <div
+                    className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition block text-center cursor-pointer"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {t("common.login")}
-                  </a>
+                  </div>
                 </Link>
               )}
             </nav>
