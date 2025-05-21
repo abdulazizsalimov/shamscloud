@@ -77,7 +77,7 @@ export function Header() {
                         }`}
                         aria-current={isActive("/admin") ? "page" : undefined}
                       >
-                        {t("admin.dashboard")}
+                        {t("admin.users")}
                       </div>
                     </Link>
                   )}

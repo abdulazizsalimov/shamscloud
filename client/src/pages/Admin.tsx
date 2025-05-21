@@ -35,28 +35,10 @@ export default function Admin() {
   // Navigation items
   const navItems: NavItem[] = [
     { 
-      id: "dashboard", 
-      label: t("admin.dashboard"), 
-      icon: BarChart,
-      component: <div className="p-8 text-center text-gray-500">Dashboard content would go here</div>
-    },
-    { 
       id: "users", 
       label: t("admin.users"), 
       icon: Users,
       component: <UserManagement />
-    },
-    { 
-      id: "quotas", 
-      label: t("admin.quotaManagement"), 
-      icon: Database,
-      component: <div className="p-8 text-center text-gray-500">Quota management would go here</div>
-    },
-    { 
-      id: "settings", 
-      label: t("dashboard.settings"), 
-      icon: Settings,
-      component: <div className="p-8 text-center text-gray-500">Settings would go here</div>
     }
   ];
   
