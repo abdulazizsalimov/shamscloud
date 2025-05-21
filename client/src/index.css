@@ -176,14 +176,61 @@ main {
   color: hsl(214 32% 91%) !important;
 }
 
-/* Улучшение контраста для кнопок в шапке */
+/* Improved contrast for header buttons in both themes */
+header button {
+  color: hsl(207 90% 99%); /* Light, high-contrast foreground for buttons */
+}
+
+header button[data-variant="default"],
+header button[data-variant="secondary"],
+header button.bg-primary {
+  background-color: hsl(207 90% 54%); /* Primary blue color for buttons */
+  color: white;
+}
+
+header button[data-variant="default"]:hover,
+header button[data-variant="secondary"]:hover,
+header button.bg-primary:hover {
+  background-color: hsl(207 90% 45%); /* Darker on hover for better feedback */
+}
+
+header button[data-variant="ghost"] {
+  background-color: transparent;
+  color: hsl(20 14.3% 4.1%); /* Dark text for ghost buttons on light theme */
+}
+
+header button[data-variant="ghost"]:hover {
+  background-color: hsla(60, 5%, 96%, 0.8); /* Light background on hover */
+}
+
 .dark header button {
   color: hsl(210 40% 98%);
+}
+
+.dark header button[data-variant="ghost"] {
+  color: hsl(210 40% 98%); /* Light text for ghost buttons on dark theme */
+}
+
+.dark header button[data-variant="ghost"]:hover {
+  background-color: hsla(217, 33%, 25%, 0.8);
 }
 
 .dark header {
   background-color: hsl(222 47% 11%);
   border-bottom: 1px solid hsl(217 32.6% 20%);
+}
+
+/* Create folder button with better contrast in light mode */
+button.text-primary {
+  color: hsl(207 90% 54%); /* Ensure text is visible */
+}
+
+button.border-primary {
+  border-color: hsl(207 90% 54%);
+}
+
+button.border-primary:hover {
+  background-color: hsla(207, 90%, 54%, 0.1);
 }
 
 :root {
@@ -207,6 +254,10 @@ main {
   --destructive-foreground: 60 9.1% 97.8%;
   --ring: 20 14.3% 4.1%;
   --radius: 0.5rem;
+  
+  /* Button hover states for light mode */
+  --primary-hover: 207 90% 45%;
+  --accent-hover: 60 4.8% 90%;
   
   --chart-1: 240 5.9% 10%;
   --chart-2: 324 70% 45%;
