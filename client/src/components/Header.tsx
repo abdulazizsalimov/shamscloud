@@ -41,14 +41,14 @@ export function Header() {
           <nav className="hidden md:flex space-x-4">
             {navItems.map((item) => (
               <Link key={item.path} href={item.path}>
-                <a 
-                  className={`px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition ${
+                <div 
+                  className={`px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition cursor-pointer ${
                     isActive(item.path) ? "bg-blue-100 text-primary" : ""
                   }`}
                   aria-current={isActive(item.path) ? "page" : undefined}
                 >
                   {item.label}
-                </a>
+                </div>
               </Link>
             ))}
             
@@ -129,36 +129,36 @@ export function Header() {
             <nav className="flex flex-col space-y-2">
               {navItems.map((item) => (
                 <Link key={item.path} href={item.path}>
-                  <a 
-                    className={`px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition ${
+                  <div 
+                    className={`px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition cursor-pointer ${
                       isActive(item.path) ? "bg-blue-100 text-primary" : ""
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                     aria-current={isActive(item.path) ? "page" : undefined}
                   >
                     {item.label}
-                  </a>
+                  </div>
                 </Link>
               ))}
               
               {user ? (
                 <>
                   <Link href="/dashboard">
-                    <a 
-                      className="px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition"
+                    <div 
+                      className="px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition cursor-pointer"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {t("dashboard.myFiles")}
-                    </a>
+                    </div>
                   </Link>
                   {isAdmin && (
                     <Link href="/admin">
-                      <a 
-                        className="px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition"
+                      <div 
+                        className="px-3 py-2 rounded hover:bg-blue-50 hover:text-primary transition cursor-pointer"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {t("admin.dashboard")}
-                      </a>
+                      </div>
                     </Link>
                   )}
                   <button

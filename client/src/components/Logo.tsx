@@ -23,10 +23,10 @@ export function Logo({ size = "medium" }: LogoProps) {
   
   return (
     <Link href="/">
-      <a className={`font-bold text-primary flex items-center ${sizeClasses[size]}`}>
+      <div className={`font-bold text-primary flex items-center ${sizeClasses[size]} cursor-pointer`}>
         <Cloud className="mr-2" size={iconSizes[size]} />
         <span>{t("common.appName")}</span>
-      </a>
+      </div>
     </Link>
   );
 }
