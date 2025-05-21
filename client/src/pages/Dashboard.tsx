@@ -346,7 +346,7 @@ export default function Dashboard() {
     
     toast({
       title: t("common.success"),
-      description: "Share link copied to clipboard"
+      description: t("notifications.shareSuccess")
     });
   };
   
@@ -488,7 +488,7 @@ export default function Dashboard() {
           {filesError && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg">
               <p className="text-red-700 dark:text-red-300">
-                {(filesError as Error).message || "Failed to load files"}
+                {(filesError as Error).message || t("notifications.loadError")}
               </p>
               <Button 
                 variant="outline" 
