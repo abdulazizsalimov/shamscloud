@@ -4,6 +4,7 @@ import session from "express-session";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { setupFiles } from "./files";
+import { setupSettings } from "./settings";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware
@@ -22,6 +23,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup file management routes
   setupFiles(app, storage);
+  
+  // Setup system settings routes
+  setupSettings(app, storage);
   
   // API health check endpoint
   app.get("/api/health", (req, res) => {

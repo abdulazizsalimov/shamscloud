@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocale } from "@/providers/LocaleProvider";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -71,7 +71,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   });
 
   // Load the current settings when the modal opens
-  useState(() => {
+  useEffect(() => {
     async function loadSettings() {
       try {
         const response = await apiRequest("/api/admin/settings", {

@@ -7,6 +7,12 @@ import { db } from "./db";
 import * as os from "os";
 import { files } from "@shared/schema";
 import { sum } from "drizzle-orm";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Get current file's path for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Schema for system settings
 const systemSettingsSchema = z.object({

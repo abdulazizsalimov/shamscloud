@@ -37,7 +37,9 @@ export const translations = {
       proceed: "Продолжить",
       goBack: "Вернуться назад",
       viewDetails: "Посмотреть детали",
-      moreOptions: "Дополнительные опции"
+      moreOptions: "Дополнительные опции",
+      saving: "Сохранение...",
+      saveChanges: "Сохранить изменения"
     },
     notifications: {
       uploadSuccess: "Файлы успешно загружены",
@@ -214,7 +216,20 @@ export const translations = {
       blockUser: "Заблокировать пользователя",
       unblockUser: "Разблокировать пользователя",
       makeAdmin: "Сделать администратором",
-      removeAdmin: "Удалить права администратора"
+      removeAdmin: "Удалить права администратора",
+      systemSettings: "Настройки системы",
+      quotaSettings: "Настройки квоты",
+      totalSystemQuota: "Общая квота системы",
+      totalQuotaDescription: "Общее пространство, выделенное для хранения файлов всех пользователей.",
+      defaultUserQuota: "Квота по умолчанию для новых пользователей",
+      defaultQuotaDescription: "Размер хранилища, выделяемый новым пользователям при регистрации.",
+      selectQuota: "Выберите размер квоты",
+      systemStorage: "Информация о хранилище",
+      availableSpace: "Доступное место",
+      usedSpace: "Использованное место",
+      settingsSaved: "Настройки сохранены",
+      settingsSavedMessage: "Настройки системы успешно обновлены.",
+      settingsSaveError: "Ошибка при сохранении настроек. Пожалуйста, попробуйте еще раз."
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",
@@ -259,7 +274,9 @@ export const translations = {
       proceed: "Proceed",
       goBack: "Go Back",
       viewDetails: "View Details",
-      moreOptions: "More Options"
+      moreOptions: "More Options",
+      saving: "Saving...",
+      saveChanges: "Save Changes"
     },
     notifications: {
       uploadSuccess: "Files uploaded successfully",
@@ -436,7 +453,20 @@ export const translations = {
       blockUser: "Block User",
       unblockUser: "Unblock User",
       makeAdmin: "Make Admin",
-      removeAdmin: "Remove Admin"
+      removeAdmin: "Remove Admin",
+      systemSettings: "System Settings",
+      quotaSettings: "Quota Settings",
+      totalSystemQuota: "Total System Quota",
+      totalQuotaDescription: "Total space allocated for storing all users' files.",
+      defaultUserQuota: "Default Quota for New Users",
+      defaultQuotaDescription: "Storage size allocated to new users upon registration.",
+      selectQuota: "Select quota size",
+      systemStorage: "Storage Information",
+      availableSpace: "Available Space",
+      usedSpace: "Used Space",
+      settingsSaved: "Settings Saved",
+      settingsSavedMessage: "System settings have been successfully updated.",
+      settingsSaveError: "Error saving settings. Please try again."
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",
