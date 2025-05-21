@@ -61,7 +61,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const endpoint = `/api/files?${currentPath ? `parentId=${currentPath}` : 'parentId=null'}${searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : ''}`;
       const response = await fetch(endpoint, { credentials: 'include' });
-      if (!response.ok) throw new Error('Failed to fetch files');
+      if (!response.ok) throw new Error(t("notifications.navigateError"));
       return response.json();
     },
     enabled: status === "authenticated"
@@ -195,7 +195,7 @@ export default function Dashboard() {
       if (!folder) {
         toast({
           title: t("common.error"),
-          description: "Failed to open folder: folder not found",
+          description: t("notifications.folderNotFound"),
           variant: "destructive"
         });
         return;
@@ -204,7 +204,7 @@ export default function Dashboard() {
       if (!folder.isFolder) {
         toast({
           title: t("common.error"),
-          description: "Selected item is not a folder",
+          description: t("dashboard.notAFolder"),
           variant: "destructive"
         });
         return;

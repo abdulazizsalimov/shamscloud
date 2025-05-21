@@ -150,7 +150,8 @@ export const translations = {
       fileSize: "Размер",
       modified: "Изменено",
       actions: "Действия",
-      folder: "Папка"
+      folder: "Папка",
+      notAFolder: "Выбранный элемент не является папкой"
     },
     admin: {
       userManagement: "Управление пользователями",
@@ -327,7 +328,8 @@ export const translations = {
       fileSize: "Size",
       modified: "Modified",
       actions: "Actions",
-      folder: "Folder"
+      folder: "Folder",
+      notAFolder: "Selected item is not a folder"
     },
     admin: {
       userManagement: "User Management",
