@@ -23,18 +23,9 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     if (!user) return undefined;
     
-    // Преобразуем поля из snake_case в camelCase для соответствия типу User
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      password: user.password,
-      role: user.role,
-      quota: user.quota,
-      usedSpace: user.used_space,
-      isBlocked: user.is_blocked,
-      createdAt: user.created_at
-    };
+    // Используем адаптер из db-adapter.ts для преобразования полей
+    const { adaptUserFromDb } = require('./db-adapter');
+    return adaptUserFromDb(user);
   }
 
   async getUserById(id: number): Promise<User | undefined> {
@@ -45,18 +36,9 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     if (!user) return undefined;
     
-    // Преобразуем поля из snake_case в camelCase для соответствия типу User
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      password: user.password,
-      role: user.role,
-      quota: user.quota,
-      usedSpace: user.used_space,
-      isBlocked: user.is_blocked,
-      createdAt: user.created_at
-    };
+    // Используем адаптер из db-adapter.ts для преобразования полей
+    const { adaptUserFromDb } = require('./db-adapter');
+    return adaptUserFromDb(user);
   }
 
   async createUser(userData: InsertUser): Promise<User> {
@@ -225,18 +207,9 @@ export class DatabaseStorage implements IStorage {
     
     const [countResult] = await countQuery;
     
-    // Преобразуем поля из snake_case в camelCase для соответствия типу User
-    const mappedUsers = result.map(user => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      password: user.password,
-      role: user.role,
-      quota: user.quota,
-      usedSpace: user.used_space,
-      isBlocked: user.is_blocked,
-      createdAt: user.created_at
-    }));
+    // Используем адаптер из db-adapter.ts для преобразования полей
+    const { adaptUserFromDb } = require('./db-adapter');
+    const mappedUsers = result.map(user => adaptUserFromDb(user));
     
     return {
       users: mappedUsers,
