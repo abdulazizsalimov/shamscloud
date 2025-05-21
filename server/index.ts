@@ -36,7 +36,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Will initialize database later in a separate step
+
 (async () => {
+  // Skipping database setup for now to get server running
+  console.log("Starting server without database initialization...");
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

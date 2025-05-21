@@ -1,36 +1,31 @@
-import { 
-  users, files, 
-  type User, type InsertUser, 
-  type File, type InsertFile 
-} from "@shared/schema";
-import { db } from "./db";
-import { eq, and, or, isNull, ilike, desc, asc, count, sql } from "drizzle-orm";
-import bcrypt from "bcryptjs";
-import fs from "fs";
-import path from "path";
-import { IStorage } from "./storage";
+import { db } from './db';
+import { users, files, type User, type InsertUser, type File, type InsertFile } from '@shared/schema';
+import { eq, like, sql, isNull, and, or } from 'drizzle-orm';
+import fs from 'fs';
+import path from 'path';
+import { IStorage } from './storage';
+import bcrypt from 'bcryptjs';
 
-// Класс для работы с базой данных PostgreSQL
+/**
+ * Реализация хранилища на базе PostgreSQL
+ */
 export class DatabaseStorage implements IStorage {
   private filesDir: string;
 
   constructor() {
-    this.filesDir = path.join(process.cwd(), "uploads");
-    
-    // Ensure uploads directory exists
+    this.filesDir = path.join(process.cwd(), 'uploads');
     if (!fs.existsSync(this.filesDir)) {
       fs.mkdirSync(this.filesDir, { recursive: true });
     }
   }
 
-  // Методы для работы с пользователями
   async getUser(id: number): Promise<User | undefined> {
-    return this.getUserById(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserById(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    return this.getUser(id);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
@@ -39,273 +34,405 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    // Хешируем пароль
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     
-    // Вставляем пользователя
-    const [user] = await db.insert(users)
-      .values({
-        ...userData,
-        password: hashedPassword,
-        usedSpace: 0
-      })
-      .returning();
+    // Добавляем пользователя через SQL для обхода проблем с типами
+    const result = await db.execute(sql`
+      INSERT INTO users (email, name, password, role, quota, used_space, is_blocked)
+      VALUES (
+        ${userData.email}, 
+        ${userData.name}, 
+        ${hashedPassword}, 
+        ${userData.role || 'user'}, 
+        ${userData.quota?.toString() || '1073741824'}, 
+        '0', 
+        false
+      )
+      RETURNING *
+    `);
+    
+    const user = result.rows[0] as User;
+    
+    // Создаем папку для пользователя
+    const userDir = path.join(this.filesDir, user.id.toString());
+    if (!fs.existsSync(userDir)) {
+      fs.mkdirSync(userDir, { recursive: true });
+    }
     
     return user;
   }
 
   async updateUser(id: number, data: Partial<User>): Promise<User | undefined> {
-    // Если обновляем пароль, хешируем его
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
+    // Проверяем, что пользователь существует
+    const existingUser = await this.getUser(id);
+    if (!existingUser) {
+      return undefined;
     }
     
-    const [updatedUser] = await db.update(users)
-      .set(data)
-      .where(eq(users.id, id))
-      .returning();
+    let updateFields = '';
+    const values: any[] = [];
+    let paramIndex = 1;
     
-    return updatedUser;
+    // Формируем SQL запрос для обновления
+    if (data.email) {
+      updateFields += `email = $${paramIndex++}, `;
+      values.push(data.email);
+    }
+    
+    if (data.name) {
+      updateFields += `name = $${paramIndex++}, `;
+      values.push(data.name);
+    }
+    
+    if (data.password) {
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      updateFields += `password = $${paramIndex++}, `;
+      values.push(hashedPassword);
+    }
+    
+    if (data.role) {
+      updateFields += `role = $${paramIndex++}, `;
+      values.push(data.role);
+    }
+    
+    if (data.quota !== undefined) {
+      updateFields += `quota = $${paramIndex++}, `;
+      values.push(data.quota.toString());
+    }
+    
+    if (data.usedSpace !== undefined) {
+      updateFields += `used_space = $${paramIndex++}, `;
+      values.push(data.usedSpace.toString());
+    }
+    
+    if (data.isBlocked !== undefined) {
+      updateFields += `is_blocked = $${paramIndex++}, `;
+      values.push(data.isBlocked);
+    }
+    
+    if (!updateFields) {
+      return existingUser; // Нечего обновлять
+    }
+    
+    // Удаляем последнюю запятую и пробел
+    updateFields = updateFields.slice(0, -2);
+    
+    // Выполняем запрос
+    const result = await db.execute(sql`
+      UPDATE users SET ${sql.raw(updateFields)}
+      WHERE id = ${id}
+      RETURNING *
+    `);
+    
+    return result.rows[0] as User;
   }
 
   async deleteUser(id: number): Promise<boolean> {
-    // Получаем файлы пользователя для удаления из файловой системы
-    const userFiles = await db.select().from(files)
-      .where(and(
-        eq(files.userId, id),
-        eq(files.isFolder, false)
-      ));
-    
-    // Удаляем файлы из файловой системы
-    for (const file of userFiles) {
-      const filePath = path.join(this.filesDir, file.path);
-      try {
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      } catch (error) {
-        console.error(`Error deleting file ${filePath}:`, error);
-      }
+    // Проверяем, что пользователь существует
+    const existingUser = await this.getUser(id);
+    if (!existingUser) {
+      return false;
     }
     
-    // Удаляем пользователя (файлы будут удалены каскадно из-за внешнего ключа)
-    const [deletedUser] = await db.delete(users)
-      .where(eq(users.id, id))
-      .returning();
+    // Удаляем все файлы пользователя (каскадное удаление в базе данных)
+    await db.delete(files).where(eq(files.userId, id));
     
-    return !!deletedUser;
+    // Удаляем пользователя
+    await db.delete(users).where(eq(users.id, id));
+    
+    // Удаляем директорию пользователя
+    const userDir = path.join(this.filesDir, id.toString());
+    if (fs.existsSync(userDir)) {
+      fs.rmSync(userDir, { recursive: true, force: true });
+    }
+    
+    return true;
   }
 
   async getAllUsers(page: number = 1, limit: number = 10, search: string = ""): Promise<{ users: User[], total: number }> {
     const offset = (page - 1) * limit;
     
-    // Строим условие запроса
-    let conditions = undefined;
+    let queryParams = '';
+    const values: any[] = [];
+    let paramIndex = 1;
+    
     if (search) {
-      conditions = or(
-        ilike(users.name, `%${search}%`),
-        ilike(users.email, `%${search}%`)
-      );
+      queryParams = `WHERE name ILIKE $${paramIndex} OR email ILIKE $${paramIndex}`;
+      values.push(`%${search}%`);
     }
     
-    // Получаем пользователей с пагинацией
-    const usersList = await db.select().from(users)
-      .where(conditions)
-      .limit(limit)
-      .offset(offset)
-      .orderBy(asc(users.id));
+    // Получаем пользователей
+    const result = await db.execute(sql`
+      SELECT * FROM users
+      ${sql.raw(queryParams ? queryParams : '')}
+      ORDER BY id
+      LIMIT ${limit} OFFSET ${offset}
+    `);
     
-    // Считаем общее количество пользователей
-    const [{ count: total }] = await db.select({ count: count() })
-      .from(users)
-      .where(conditions);
+    // Получаем общее количество для пагинации
+    const countResult = await db.execute(sql`
+      SELECT COUNT(*) FROM users
+      ${sql.raw(queryParams ? queryParams : '')}
+    `);
     
-    return { users: usersList, total: Number(total) };
+    return {
+      users: result.rows as User[],
+      total: parseInt(countResult.rows[0].count, 10)
+    };
   }
 
-  // Методы для работы с файлами
   async getFile(id: number): Promise<File | undefined> {
     const [file] = await db.select().from(files).where(eq(files.id, id));
     return file;
   }
 
   async getFilesByParentId(parentId: number | null, userId: number): Promise<File[]> {
-    // Получаем файлы по родительскому ID и ID пользователя
-    const userFiles = await db.select().from(files)
-      .where(and(
-        eq(files.userId, userId),
-        parentId === null ? isNull(files.parentId) : eq(files.parentId, parentId)
-      ))
-      .orderBy(
-        desc(files.isFolder),
-        asc(files.name)
-      );
+    let result;
     
-    return userFiles;
+    if (parentId === null) {
+      // Для корневой директории
+      result = await db.execute(sql`
+        SELECT * FROM files
+        WHERE user_id = ${userId} AND parent_id IS NULL
+      `);
+    } else {
+      // Для заданной директории
+      result = await db.execute(sql`
+        SELECT * FROM files
+        WHERE user_id = ${userId} AND parent_id = ${parentId}
+      `);
+    }
+    
+    return result.rows as File[];
   }
 
   async searchFiles(userId: number, query: string, parentId?: number | null): Promise<File[]> {
-    // Строим условие запроса
-    let conditions = and(
-      eq(files.userId, userId),
-      ilike(files.name, `%${query}%`)
-    );
+    let sqlQuery;
     
-    // Добавляем условие родительского ID если он предоставлен
-    if (parentId !== undefined) {
-      conditions = and(
-        conditions,
-        parentId === null ? isNull(files.parentId) : eq(files.parentId, parentId)
-      );
+    if (parentId === undefined) {
+      // Поиск по всем файлам пользователя
+      sqlQuery = sql`
+        SELECT * FROM files
+        WHERE user_id = ${userId} AND name ILIKE ${`%${query}%`}
+      `;
+    } else if (parentId === null) {
+      // Поиск только в корневой директории
+      sqlQuery = sql`
+        SELECT * FROM files
+        WHERE user_id = ${userId} AND name ILIKE ${`%${query}%`} AND parent_id IS NULL
+      `;
+    } else {
+      // Поиск в конкретной директории
+      sqlQuery = sql`
+        SELECT * FROM files
+        WHERE user_id = ${userId} AND name ILIKE ${`%${query}%`} AND parent_id = ${parentId}
+      `;
     }
     
-    // Получаем подходящие файлы
-    const matchingFiles = await db.select().from(files)
-      .where(conditions)
-      .orderBy(
-        desc(files.isFolder),
-        asc(files.name)
-      );
-    
-    return matchingFiles;
+    const result = await db.execute(sqlQuery);
+    return result.rows as File[];
   }
 
   async createFile(fileData: InsertFile): Promise<File> {
-    // Вставляем файл
-    const [file] = await db.insert(files)
-      .values(fileData)
-      .returning();
+    // Преобразуем размер в строку
+    const size = fileData.size !== undefined ? fileData.size.toString() : '0';
     
-    // Обновляем использованное пространство пользователя, если это не папка
-    if (!fileData.isFolder) {
-      await db.update(users)
-        .set({
-          usedSpace: sql`${users.usedSpace} + ${fileData.size}`
-        })
-        .where(eq(users.id, fileData.userId));
+    // Создаем файл через SQL для обхода проблем с типами
+    const result = await db.execute(sql`
+      INSERT INTO files (name, path, type, size, is_folder, parent_id, user_id)
+      VALUES (
+        ${fileData.name},
+        ${fileData.path},
+        ${fileData.type},
+        ${size},
+        ${fileData.isFolder || false},
+        ${fileData.parentId === null ? sql`NULL` : fileData.parentId},
+        ${fileData.userId}
+      )
+      RETURNING *
+    `);
+    
+    const file = result.rows[0] as File;
+    
+    // Обновляем использованное пространство пользователя
+    if (!file.isFolder && file.size) {
+      const user = await this.getUser(file.userId);
+      if (user) {
+        const newUsedSpace = (parseInt(user.usedSpace, 10) + parseInt(file.size, 10)).toString();
+        await this.updateUser(user.id, { usedSpace: newUsedSpace });
+      }
     }
     
     return file;
   }
 
   async createFolder(name: string, parentId: number | null, userId: number): Promise<File> {
-    // Вставляем папку
-    const [folder] = await db.insert(files)
-      .values({
-        name,
-        path: "",
-        type: "folder",
-        size: 0,
-        isFolder: true,
-        parentId,
-        userId
-      })
-      .returning();
+    // Проверяем, существует ли пользователь
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
     
-    return folder;
+    // Проверяем, существует ли родительская папка, если она указана
+    if (parentId !== null) {
+      const parentFolder = await this.getFile(parentId);
+      if (!parentFolder || !parentFolder.isFolder) {
+        throw new Error(`Parent folder with id ${parentId} not found or not a folder`);
+      }
+      
+      // Проверяем, принадлежит ли родительская папка пользователю
+      if (parentFolder.userId !== userId) {
+        throw new Error(`You don't have permission to create a folder in this location`);
+      }
+    }
+    
+    // Создаем путь к папке
+    let folderPath = '';
+    if (parentId === null) {
+      folderPath = `/uploads/${userId}/${name}`;
+    } else {
+      const parentFolder = await this.getFile(parentId);
+      if (parentFolder && parentFolder.path) {
+        folderPath = `${parentFolder.path}/${name}`;
+      } else {
+        folderPath = `/uploads/${userId}/${name}`;
+      }
+    }
+    
+    // Создаем физическую папку
+    const fullPath = path.join(process.cwd(), folderPath);
+    if (!fs.existsSync(fullPath)) {
+      fs.mkdirSync(fullPath, { recursive: true });
+    }
+    
+    // Создаем запись в базе данных
+    const result = await db.execute(sql`
+      INSERT INTO files (name, path, type, size, is_folder, parent_id, user_id)
+      VALUES (
+        ${name},
+        ${folderPath},
+        'folder',
+        '0',
+        true,
+        ${parentId === null ? sql`NULL` : parentId},
+        ${userId}
+      )
+      RETURNING *
+    `);
+    
+    return result.rows[0] as File;
   }
 
   async updateFile(id: number, data: Partial<File>): Promise<File | undefined> {
-    // Получаем текущий файл
-    const [file] = await db.select().from(files).where(eq(files.id, id));
-    
-    if (!file) {
+    // Проверяем, что файл существует
+    const existingFile = await this.getFile(id);
+    if (!existingFile) {
       return undefined;
     }
     
-    // Если переименовываем файл, обрабатываем операции файловой системы
-    if (data.name && data.name !== file.name && !file.isFolder && file.path) {
-      // Получаем новый путь к файлу
-      const oldPath = path.join(this.filesDir, file.path);
-      const directory = path.dirname(file.path);
-      const extension = path.extname(file.name);
-      const newFilename = `${data.name}${extension}`;
-      const newPath = path.join(directory, newFilename);
-      const newFullPath = path.join(this.filesDir, newPath);
-      
-      // Переименовываем файл в файловой системе
-      try {
-        if (fs.existsSync(oldPath)) {
-          fs.renameSync(oldPath, newFullPath);
-        }
-      } catch (error) {
-        console.error(`Error renaming file ${oldPath} to ${newFullPath}:`, error);
-        return undefined;
-      }
-      
-      // Обновляем путь к файлу
-      data.path = newPath;
+    let updateFields = '';
+    const values: any[] = [];
+    let paramIndex = 1;
+    
+    // Формируем SQL запрос для обновления
+    if (data.name) {
+      updateFields += `name = $${paramIndex++}, `;
+      values.push(data.name);
     }
     
-    // Обновляем файл
-    const [updatedFile] = await db.update(files)
-      .set({
-        ...data,
-        updatedAt: new Date()
-      })
-      .where(eq(files.id, id))
-      .returning();
+    if (data.path) {
+      updateFields += `path = $${paramIndex++}, `;
+      values.push(data.path);
+    }
     
-    return updatedFile;
+    if (data.type) {
+      updateFields += `type = $${paramIndex++}, `;
+      values.push(data.type);
+    }
+    
+    if (data.size !== undefined) {
+      updateFields += `size = $${paramIndex++}, `;
+      values.push(data.size.toString());
+      
+      // Обновляем использованное пространство пользователя
+      if (!existingFile.isFolder) {
+        const user = await this.getUser(existingFile.userId);
+        if (user) {
+          const sizeDiff = parseInt(data.size.toString(), 10) - parseInt(existingFile.size, 10);
+          const newUsedSpace = Math.max(0, parseInt(user.usedSpace, 10) + sizeDiff).toString();
+          await this.updateUser(user.id, { usedSpace: newUsedSpace });
+        }
+      }
+    }
+    
+    // updatedAt всегда обновляем
+    updateFields += `updated_at = NOW()`;
+    
+    // Выполняем запрос
+    const result = await db.execute(sql`
+      UPDATE files SET ${sql.raw(updateFields)}
+      WHERE id = ${id}
+      RETURNING *
+    `);
+    
+    return result.rows[0] as File;
   }
 
   async deleteFile(id: number): Promise<boolean> {
-    // Получаем текущий файл
-    const [file] = await db.select().from(files).where(eq(files.id, id));
-    
+    // Проверяем, что файл существует
+    const file = await this.getFile(id);
     if (!file) {
       return false;
     }
     
-    // Если это папка, удаляем все ее содержимое рекурсивно
+    // Если это папка, удаляем все вложенные файлы и папки
     if (file.isFolder) {
-      // Получаем все дочерние элементы
-      const childFiles = await db.select().from(files)
-        .where(eq(files.parentId, id));
+      const children = await db.execute(sql`
+        SELECT * FROM files WHERE parent_id = ${id}
+      `);
       
-      // Удаляем каждый дочерний элемент
-      for (const childFile of childFiles) {
-        await this.deleteFile(childFile.id);
+      for (const child of children.rows) {
+        await this.deleteFile(child.id);
       }
-    } else if (file.path) {
-      // Удаляем файл из файловой системы
-      const filePath = path.join(this.filesDir, file.path);
-      try {
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      } catch (error) {
-        console.error(`Error deleting file ${filePath}:`, error);
-      }
-      
-      // Обновляем использованное пространство пользователя
-      await db.update(users)
-        .set({
-          usedSpace: sql`GREATEST(0, ${users.usedSpace} - ${file.size})`
-        })
-        .where(eq(users.id, file.userId));
     }
     
-    // Удаляем файл
-    const [deletedFile] = await db.delete(files)
-      .where(eq(files.id, id))
-      .returning();
+    // Обновляем использованное пространство пользователя
+    if (!file.isFolder) {
+      const user = await this.getUser(file.userId);
+      if (user) {
+        const newUsedSpace = Math.max(0, parseInt(user.usedSpace, 10) - parseInt(file.size, 10)).toString();
+        await this.updateUser(user.id, { usedSpace: newUsedSpace });
+      }
+    }
     
-    return !!deletedFile;
+    // Удаляем физический файл, если это не папка
+    if (!file.isFolder && file.path) {
+      const fullPath = path.join(process.cwd(), file.path);
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+      }
+    }
+    
+    // Удаляем запись из базы данных
+    await db.delete(files).where(eq(files.id, id));
+    
+    return true;
   }
 
   async getFileHierarchy(fileId: number): Promise<File[]> {
-    const hierarchy: File[] = [];
+    const result: File[] = [];
     let currentId: number | null = fileId;
     
     while (currentId !== null) {
-      const [file] = await db.select().from(files).where(eq(files.id, currentId));
+      const file = await this.getFile(currentId);
       if (!file) break;
       
-      hierarchy.unshift(file);
+      result.unshift(file);
       currentId = file.parentId;
     }
     
-    return hierarchy;
+    return result;
   }
 }
+
+export const storage = new DatabaseStorage();

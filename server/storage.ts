@@ -1,5 +1,4 @@
 import { users, type User, type InsertUser, files, type File, type InsertFile } from "@shared/schema";
-import { createId } from "@paralleldrive/cuid2";
 import path from "path";
 import bcrypt from "bcryptjs";
 

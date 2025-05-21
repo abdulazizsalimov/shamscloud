@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, bigint } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -9,8 +9,8 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   password: text("password").notNull(),
   role: text("role").notNull().default("user"),
-  quota: integer("quota").notNull().default(10737418240), // 10GB in bytes
-  usedSpace: integer("used_space").notNull().default(0),
+  quota: text("quota").notNull().default("10737418240"), // 10GB in bytes as string
+  usedSpace: text("used_space").notNull().default("0"), // Used space as string
   isBlocked: boolean("is_blocked").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -21,7 +21,7 @@ export const files = pgTable("files", {
   name: text("name").notNull(),
   path: text("path").notNull(),
   type: text("type").notNull(),
-  size: integer("size").notNull(),
+  size: text("size").notNull().default("0"), // Size as string
   isFolder: boolean("is_folder").notNull().default(false),
   parentId: integer("parent_id"),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
