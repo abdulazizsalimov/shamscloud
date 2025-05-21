@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useLocale } from "@/providers/LocaleProvider";
 import { useAuth } from "@/providers/AuthProvider";
@@ -6,7 +7,7 @@ import { Logo } from "@/components/Logo";
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { Accessibility, User, LogOut, Globe } from "lucide-react";
+import { Accessibility, User, LogOut, Globe, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,12 +16,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SettingsModal } from "@/components/Admin/SettingsModal";
 
 export function Header() {
   const [location] = useLocation();
   const { t, locale, setLocale } = useLocale();
   const { user, logout, isAdmin } = useAuth();
   const { togglePanel } = useAccessibility();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   
   const isActive = (path: string) => location === path;
   
@@ -125,6 +128,18 @@ export function Header() {
                 <Accessibility className="h-5 w-5" />
               </Button>
               
+              {/* Settings Button (Admin Only) */}
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSettingsOpen(true)}
+                  aria-label={t("admin.systemSettings")}
+                >
+                  <Settings className="h-5 w-5" />
+                </Button>
+              )}
+              
               {/* Кнопка для пользователя */}
               {user ? (
                 <DropdownMenu>
@@ -154,6 +169,9 @@ export function Header() {
         </div>
       </div>
       <AccessibilityPanel />
+      
+      {/* Settings Modal for Admin */}
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </header>
   );
 }
