@@ -273,6 +273,56 @@ export function setupAuth(app: Express, storage: IStorage) {
       res.status(500).json({ message: "An error occurred during password reset" });
     }
   });
+  
+  // Google OAuth authentication
+  app.post("/api/auth/google", async (req: Request, res: Response) => {
+    try {
+      const { idToken, name, email, photoURL } = req.body;
+      
+      if (!idToken || !email) {
+        return res.status(400).json({ message: "Invalid authentication data" });
+      }
+      
+      // Check if user already exists
+      let user = await storage.getUserByEmail(email);
+      
+      if (user) {
+        // User exists, log them in
+        req.session.userId = user.id;
+        
+        // Don't send password
+        const { password, ...userData } = user;
+        return res.json(userData);
+      } 
+      
+      // User doesn't exist, create new account
+      // Generate a random password since we won't use it (user will always login with Google)
+      const randomPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      
+      // Create new user
+      user = await storage.createUser({
+        name: name || email.split('@')[0], // Use part of email if no name provided
+        email,
+        password: hashedPassword,
+        role: "user",
+        quota: "10737418240", // 10GB default
+        usedSpace: "0",
+        isBlocked: false,
+        isEmailVerified: true // Auto-verify Google users
+      });
+      
+      // Set session
+      req.session.userId = user.id;
+      
+      // Don't send password
+      const { password, ...userData } = user;
+      res.status(201).json(userData);
+    } catch (error) {
+      console.error("Google auth error:", error);
+      res.status(500).json({ message: "An error occurred during Google authentication" });
+    }
+  });
 
   // Admin routes
   

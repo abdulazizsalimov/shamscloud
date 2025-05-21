@@ -136,7 +136,18 @@ export const translations = {
       backToLogin: "Вернуться ко входу",
       loginButton: "Войти",
       registerButton: "Зарегистрироваться",
-      resetButton: "Восстановить пароль"
+      resetButton: "Восстановить пароль",
+      google: {
+        button: "Войти через Google",
+        success: "Вход через Google выполнен",
+        successMessage: "Вы успешно вошли через аккаунт Google",
+        error: "Ошибка входа через Google",
+        errorMessage: "Не удалось войти через аккаунт Google"
+      },
+      verification: {
+        success: "Email успешно подтвержден",
+        error: "Ошибка подтверждения email"
+      }
     },
     dashboard: {
       myFiles: "Мои файлы",
@@ -347,7 +358,18 @@ export const translations = {
       backToLogin: "Back to Login",
       loginButton: "Sign In",
       registerButton: "Register",
-      resetButton: "Reset Password"
+      resetButton: "Reset Password",
+      google: {
+        button: "Sign in with Google",
+        success: "Google Sign-in Successful",
+        successMessage: "You have successfully signed in with your Google account",
+        error: "Google Sign-in Error",
+        errorMessage: "Failed to sign in with Google account"
+      },
+      verification: {
+        success: "Email successfully verified",
+        error: "Email verification error"
+      }
     },
     dashboard: {
       myFiles: "My Files",
