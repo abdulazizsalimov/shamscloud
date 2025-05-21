@@ -178,29 +178,37 @@ main {
 
 /* Improved contrast for header buttons in both themes */
 header button {
-  color: hsl(207 90% 99%); /* Light, high-contrast foreground for buttons */
+  color: hsl(0 0% 10%); /* Dark text for all header buttons in light mode */
 }
 
-header button[data-variant="default"],
-header button[data-variant="secondary"],
-header button.bg-primary {
-  background-color: hsl(207 90% 54%); /* Primary blue color for buttons */
-  color: white;
+/* Login/Sign-in button - always visible in both themes */
+header button.bg-primary,
+header a.bg-primary {
+  background-color: hsl(207 90% 54%); /* Primary blue color */
+  color: white !important;
 }
 
-header button[data-variant="default"]:hover,
-header button[data-variant="secondary"]:hover,
-header button.bg-primary:hover {
-  background-color: hsl(207 90% 45%); /* Darker on hover for better feedback */
+header button.bg-primary:hover,
+header a.bg-primary:hover {
+  background-color: hsl(207 90% 45%); /* Darker on hover */
 }
 
+/* Ghost buttons in header (accessibility, language toggle, etc.) */
 header button[data-variant="ghost"] {
   background-color: transparent;
-  color: hsl(20 14.3% 4.1%); /* Dark text for ghost buttons on light theme */
+  color: hsl(0 0% 10%); /* Dark color for ghost buttons in light theme */
+  border: 1px solid hsl(0 0% 80%); /* Light border for better visibility */
 }
 
 header button[data-variant="ghost"]:hover {
-  background-color: hsla(60, 5%, 96%, 0.8); /* Light background on hover */
+  background-color: hsla(0, 0%, 90%, 0.8); /* Light background on hover */
+  border-color: hsl(0 0% 60%);
+}
+
+/* Icon buttons in header */
+header button svg,
+header .button-icon {
+  color: hsl(0 0% 10%); /* Ensure icons are visible in light mode */
 }
 
 .dark header button {
