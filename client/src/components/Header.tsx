@@ -99,13 +99,13 @@ export function Header() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => setLocale('ru')}
-                    className={locale === 'ru' ? "bg-blue-50 font-medium" : ""}
+                    className={locale === 'ru' ? "bg-blue-50 dark:bg-blue-800 font-medium dark:text-white" : ""}
                   >
                     Русский
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => setLocale('en')}
-                    className={locale === 'en' ? "bg-blue-50 font-medium" : ""}
+                    className={locale === 'en' ? "bg-blue-50 dark:bg-blue-800 font-medium dark:text-white" : ""}
                   >
                     English
                   </DropdownMenuItem>
