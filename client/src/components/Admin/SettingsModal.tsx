@@ -143,9 +143,26 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         description: t("admin.settingsSavedMessage"),
       });
       
-      // Refresh the settings after a short delay
-      setTimeout(() => {
-        loadSettings();
+      // Manually refresh settings after a short delay
+      setTimeout(function() {
+        try {
+          // Call the settings loading function directly
+          form.reset();
+          fetch("/api/admin/settings", {
+            credentials: "include"
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data) {
+              form.setValue("totalQuota", (parseInt(data.totalQuota) / (1024 * 1024 * 1024)).toString());
+              form.setValue("defaultQuota", (parseInt(data.defaultQuota) / (1024 * 1024 * 1024)).toString());
+              setAvailableSpace(formatBytes(parseInt(data.availableSpace || "0")));
+            }
+          })
+          .catch(err => console.error("Error refreshing settings:", err));
+        } catch (refreshError) {
+          console.error("Error in refresh timeout:", refreshError);
+        }
       }, 500);
       
     } catch (error) {
