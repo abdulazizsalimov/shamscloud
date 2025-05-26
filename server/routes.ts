@@ -22,14 +22,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app, storage);
   
+  // Setup public file sharing routes (must be before setupFiles to avoid conflicts)
+  setupPublicFiles(app, storage);
+  
   // Setup file management routes
   setupFiles(app, storage);
   
   // Setup system settings routes
   setupSettings(app, storage);
-  
-  // Setup public file sharing routes
-  setupPublicFiles(app, storage);
   
   // API health check endpoint
   app.get("/api/health", (req, res) => {
