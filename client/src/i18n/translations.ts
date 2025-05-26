@@ -262,7 +262,8 @@ export const translations = {
       homePageDescription: "Главная страница сайта с основной информацией",
       aboutPageDescription: "Страница с информацией о компании и проекте",
       contactsPageDescription: "Страница с контактной информацией и формой обратной связи",
-      pageEditingNote: "Нажмите на иконку карандаша, чтобы отредактировать содержимое страницы"
+      pageEditingNote: "Нажмите на иконку карандаша, чтобы отредактировать содержимое страницы",
+      editingMode: "Режим редактирования"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",
@@ -532,7 +533,8 @@ export const translations = {
       homePageDescription: "Main website page with primary information",
       aboutPageDescription: "Page with company and project information",
       contactsPageDescription: "Page with contact information and feedback form",
-      pageEditingNote: "Click the pencil icon to edit page content"
+      pageEditingNote: "Click the pencil icon to edit page content",
+      editingMode: "Editing Mode"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",
