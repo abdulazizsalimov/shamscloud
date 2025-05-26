@@ -195,6 +195,16 @@ export function setupFiles(app: Express, storageService: IStorage) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
+      // Отладочная информация о пользователе
+      console.log('User data for upload:', {
+        id: user.id,
+        email: user.email,
+        quota: user.quota,
+        usedSpace: user.usedSpace,
+        quotaType: typeof user.quota,
+        usedSpaceType: typeof user.usedSpace
+      });
+      
       // Безопасно получаем parentId, убедившись, что он является числом или null
       let parentId: number | null = null;
       
