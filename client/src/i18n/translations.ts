@@ -252,7 +252,14 @@ export const translations = {
       addLanguage: "Добавить язык",
       languageAdded: "Язык добавлен",
       languageAddedSuccess: "Новый язык успешно добавлен",
-      languageAddError: "Ошибка при добавлении языка"
+      languageAddError: "Ошибка при добавлении языка",
+      pageManagement: "Редактирование страниц",
+      pageManagementDescription: "Управление содержимым страниц сайта",
+      editPage: "Редактировать страницу",
+      homePageDescription: "Главная страница сайта с основной информацией",
+      aboutPageDescription: "Страница с информацией о компании и проекте",
+      contactsPageDescription: "Страница с контактной информацией и формой обратной связи",
+      pageEditingNote: "Нажмите на иконку карандаша, чтобы отредактировать содержимое страницы"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",
@@ -512,7 +519,14 @@ export const translations = {
       addLanguage: "Add Language",
       languageAdded: "Language Added",
       languageAddedSuccess: "New language has been successfully added",
-      languageAddError: "Error adding language"
+      languageAddError: "Error adding language",
+      pageManagement: "Page Management",
+      pageManagementDescription: "Manage website page content",
+      editPage: "Edit page",
+      homePageDescription: "Main website page with primary information",
+      aboutPageDescription: "Page with company and project information",
+      contactsPageDescription: "Page with contact information and feedback form",
+      pageEditingNote: "Click the pencil icon to edit page content"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",
