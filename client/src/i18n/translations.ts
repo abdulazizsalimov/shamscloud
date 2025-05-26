@@ -471,7 +471,12 @@ export const translations = {
       usedSpace: "Used Space",
       settingsSaved: "Settings Saved",
       settingsSavedMessage: "System settings have been successfully updated.",
-      settingsSaveError: "Error saving settings. Please try again."
+      settingsSaveError: "Error saving settings. Please try again.",
+      multilingualSettings: "Multilingual",
+      availableLanguages: "Available Languages",
+      addTranslation: "Add Translation",
+      editTranslation: "Edit Translation",
+      multilingualDescription: "Manage interface translations to support multiple languages. You can edit existing translations or add new languages."
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",
