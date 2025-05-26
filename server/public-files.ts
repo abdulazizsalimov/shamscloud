@@ -241,4 +241,137 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
       res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  // Получение содержимого папки для browsing (GET)
+  app.get("/api/public/browse/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      
+      const file = await storage.getFileByPublicToken(token);
+      if (!file || !file.isPublic || file.shareType !== "browse" || !file.isFolder) {
+        return res.status(404).json({ message: "Folder not found or not accessible" });
+      }
+
+      // Проверяем пароль для защищенных папок
+      if (file.isPasswordProtected) {
+        return res.status(401).json({ message: "Password required" });
+      }
+
+      // Получаем содержимое папки
+      const folderContents = await storage.getFilesByParentId(file.id, file.userId);
+      
+      res.json({
+        name: file.name,
+        files: folderContents.map(f => ({
+          id: f.id,
+          name: f.name,
+          isFolder: f.isFolder,
+          size: f.size,
+          type: f.type
+        })),
+        isPasswordProtected: file.isPasswordProtected
+      });
+    } catch (error) {
+      console.error("Error browsing folder:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Получение содержимого папки для browsing с паролем (POST)
+  app.post("/api/public/browse/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const { password } = req.body;
+      
+      const file = await storage.getFileByPublicToken(token);
+      if (!file || !file.isPublic || file.shareType !== "browse" || !file.isFolder) {
+        return res.status(404).json({ message: "Folder not found or not accessible" });
+      }
+
+      // Проверяем пароль
+      if (file.isPasswordProtected && file.sharePassword) {
+        if (!password) {
+          return res.status(400).json({ message: "Password required" });
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password, file.sharePassword);
+        if (!isPasswordValid) {
+          return res.status(401).json({ message: "Invalid password" });
+        }
+      }
+
+      // Получаем содержимое папки
+      const folderContents = await storage.getFilesByParentId(file.id, file.userId);
+      
+      res.json({
+        name: file.name,
+        files: folderContents.map(f => ({
+          id: f.id,
+          name: f.name,
+          isFolder: f.isFolder,
+          size: f.size,
+          type: f.type
+        })),
+        isPasswordProtected: file.isPasswordProtected
+      });
+    } catch (error) {
+      console.error("Error browsing folder with password:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Скачивание отдельного файла из browsed папки
+  app.post("/api/public/download-file/:token/:fileId", async (req: Request, res: Response) => {
+    try {
+      const { token, fileId } = req.params;
+      const { password } = req.body;
+      
+      // Получаем папку по токену
+      const folder = await storage.getFileByPublicToken(token);
+      if (!folder || !folder.isPublic || folder.shareType !== "browse" || !folder.isFolder) {
+        return res.status(404).json({ message: "Folder not found or not accessible" });
+      }
+
+      // Проверяем пароль папки
+      if (folder.isPasswordProtected && folder.sharePassword) {
+        if (!password) {
+          return res.status(400).json({ message: "Password required" });
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password, folder.sharePassword);
+        if (!isPasswordValid) {
+          return res.status(401).json({ message: "Invalid password" });
+        }
+      }
+
+      // Получаем файл для скачивания
+      const file = await storage.getFile(parseInt(fileId));
+      if (!file || file.isFolder) {
+        return res.status(404).json({ message: "File not found" });
+      }
+
+      // Проверяем, что файл находится в этой папке
+      const folderContents = await storage.getFilesByParentId(folder.id, folder.userId);
+      const isFileInFolder = folderContents.some(f => f.id === file.id);
+      
+      if (!isFileInFolder) {
+        return res.status(403).json({ message: "File not accessible" });
+      }
+
+      const filePath = path.join(process.cwd(), file.path);
+      
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "File not found on disk" });
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="${file.name}"`);
+      res.setHeader("Content-Type", "application/octet-stream");
+      
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error("Error downloading file from folder:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 }
