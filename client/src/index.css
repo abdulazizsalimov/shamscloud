@@ -298,6 +298,60 @@ button.border-primary:hover {
   background-color: hsla(207, 90%, 54%, 0.1);
 }
 
+/* Admin panel buttons - ensure visibility in both themes */
+[data-radix-popper-content-wrapper] button[data-variant="ghost"] {
+  color: hsl(0 0% 20%) !important;
+  border: 1px solid hsl(0 0% 80%) !important;
+}
+
+[data-radix-popper-content-wrapper] button[data-variant="ghost"]:hover {
+  background-color: hsl(0 0% 95%) !important;
+  color: hsl(0 0% 10%) !important;
+}
+
+.dark [data-radix-popper-content-wrapper] button[data-variant="ghost"] {
+  color: hsl(0 0% 90%) !important;
+  border: 1px solid hsl(0 0% 40%) !important;
+}
+
+.dark [data-radix-popper-content-wrapper] button[data-variant="ghost"]:hover {
+  background-color: hsl(0 0% 20%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+/* General admin panel button fixes */
+button[aria-label*="Редактировать"],
+button[aria-label*="Edit"],
+button[aria-label*="Удалить"],
+button[aria-label*="Delete"] {
+  color: hsl(0 0% 30%) !important;
+  border: 1px solid hsl(0 0% 70%) !important;
+}
+
+button[aria-label*="Редактировать"]:hover,
+button[aria-label*="Edit"]:hover,
+button[aria-label*="Удалить"]:hover,
+button[aria-label*="Delete"]:hover {
+  background-color: hsl(0 0% 90%) !important;
+  color: hsl(0 0% 10%) !important;
+}
+
+.dark button[aria-label*="Редактировать"],
+.dark button[aria-label*="Edit"],
+.dark button[aria-label*="Удалить"],
+.dark button[aria-label*="Delete"] {
+  color: hsl(0 0% 90%) !important;
+  border: 1px solid hsl(0 0% 50%) !important;
+}
+
+.dark button[aria-label*="Редактировать"]:hover,
+.dark button[aria-label*="Edit"]:hover,
+.dark button[aria-label*="Удалить"]:hover,
+.dark button[aria-label*="Delete"]:hover {
+  background-color: hsl(0 0% 25%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 20 14.3% 4.1%;
