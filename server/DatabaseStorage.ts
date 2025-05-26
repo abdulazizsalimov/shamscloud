@@ -606,6 +606,75 @@ export class DatabaseStorage implements IStorage {
     
     return result;
   }
+
+  // Методы для работы с токенами верификации
+  async createVerificationToken(userId: number, type: string, expiresInHours: number): Promise<VerificationToken> {
+    const token = nanoid(32);
+    const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
+    
+    const result = await db.execute(sql`
+      INSERT INTO verification_tokens (user_id, token, type, expires_at)
+      VALUES (${userId}, ${token}, ${type}, ${expiresAt})
+      RETURNING *
+    `);
+    
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      token: row.token,
+      type: row.type,
+      expiresAt: row.expires_at,
+      createdAt: row.created_at,
+    };
+  }
+
+  async getVerificationToken(token: string): Promise<VerificationToken | undefined> {
+    const result = await db.execute(sql`
+      SELECT * FROM verification_tokens 
+      WHERE token = ${token} AND expires_at > NOW()
+      LIMIT 1
+    `);
+    
+    if (!result.rows || result.rows.length === 0) {
+      return undefined;
+    }
+    
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      token: row.token,
+      type: row.type,
+      expiresAt: row.expires_at,
+      createdAt: row.created_at,
+    };
+  }
+
+  async verifyUser(userId: number): Promise<User | undefined> {
+    const result = await db.execute(sql`
+      UPDATE users 
+      SET is_email_verified = true 
+      WHERE id = ${userId}
+      RETURNING *
+    `);
+    
+    if (!result.rows || result.rows.length === 0) {
+      return undefined;
+    }
+    
+    return adaptUserFromDb(result.rows[0]);
+  }
+
+  async deleteVerificationToken(id: number): Promise<boolean> {
+    try {
+      await db.execute(sql`DELETE FROM verification_tokens WHERE id = ${id}`);
+      return true;
+    } catch (error) {
+      console.error("Error deleting verification token:", error);
+      return false;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
