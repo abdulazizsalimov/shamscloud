@@ -220,69 +220,83 @@ function BrowseFolder() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Загрузка папки...</p>
-        </div>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-300">Загрузка папки...</p>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-red-600">Ошибка</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
-            <Button onClick={() => setLocation("/")} className="w-full">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              На главную
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-red-600">Ошибка</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
+              <Button onClick={() => setLocation("/")} className="w-full">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                На главную
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   if (isPasswordRequired) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              Защищенная папка
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-600 dark:text-gray-300">
-              Эта папка защищена паролем. Введите пароль для доступа.
-            </p>
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="Введите пароль"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handlePasswordSubmit()}
-              />
-              <Button onClick={handlePasswordSubmit} className="w-full">
-                Открыть папку
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Защищенная папка
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-600 dark:text-gray-300">
+                Эта папка защищена паролем. Введите пароль для доступа.
+              </p>
+              <div className="space-y-2">
+                <Input
+                  type="password"
+                  placeholder="Введите пароль"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handlePasswordSubmit()}
+                />
+                <Button onClick={handlePasswordSubmit} className="w-full">
+                  Открыть папку
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -350,7 +364,9 @@ function BrowseFolder() {
             )}
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
