@@ -105,12 +105,15 @@ function BrowseFolder() {
   const navigateToFolder = async (folderId: number) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/public/browse/${token}/${folderId}`, {
+      const response = await fetch(`/api/public/browse/${token}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password: validPassword }),
+        body: JSON.stringify({ 
+          password: validPassword,
+          folderId: folderId 
+        }),
       });
 
       if (!response.ok) {
