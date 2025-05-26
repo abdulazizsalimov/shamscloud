@@ -30,7 +30,35 @@ export function EditableContent({ children, isEditMode, onSave, onCancel }: Edit
       { code: 'en', name: 'English', englishName: 'English' }
     ];
   });
+  const [editedContent, setEditedContent] = useState<Map<string, string>>(new Map());
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Загружаем сохраненный контент при монтировании
+  useEffect(() => {
+    const savedContent = localStorage.getItem(`page-content-${window.location.pathname}-${editingLanguage}`);
+    if (savedContent) {
+      const parsed = JSON.parse(savedContent);
+      setEditedContent(new Map(Object.entries(parsed)));
+    }
+  }, [editingLanguage]);
+
+  // Применяем сохраненный контент к элементам
+  useEffect(() => {
+    if (!isEditMode || !contentRef.current) return;
+    
+    // Добавляем уникальные идентификаторы к редактируемым элементам
+    const editableElements = contentRef.current.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
+    editableElements.forEach((element, index) => {
+      const elementId = `editable-${element.tagName.toLowerCase()}-${index}`;
+      element.setAttribute('data-editable-id', elementId);
+      
+      // Применяем сохраненный контент, если есть
+      const savedText = editedContent.get(elementId);
+      if (savedText) {
+        element.textContent = savedText;
+      }
+    });
+  }, [isEditMode, editedContent]);
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -139,6 +167,14 @@ export function EditableContent({ children, isEditMode, onSave, onCancel }: Edit
     editingElement.classList.remove('editing-active');
     
     if (newContent !== originalContent) {
+      const elementId = editingElement.getAttribute('data-editable-id');
+      if (elementId) {
+        setEditedContent(prev => {
+          const newMap = new Map(prev);
+          newMap.set(elementId, newContent);
+          return newMap;
+        });
+      }
       setHasChanges(true);
     }
     
@@ -147,15 +183,38 @@ export function EditableContent({ children, isEditMode, onSave, onCancel }: Edit
   };
 
   const handleSave = () => {
+    // Сохраняем изменения в localStorage
+    const contentToSave = Object.fromEntries(editedContent);
+    localStorage.setItem(`page-content-${window.location.pathname}-${editingLanguage}`, JSON.stringify(contentToSave));
+    
     setHasChanges(false);
+    console.log('Изменения сохранены для языка:', editingLanguage);
     onSave();
   };
 
   const handleCancel = () => {
-    // Восстанавливаем оригинальный контент для всех измененных элементов
+    // Очищаем временные изменения и восстанавливаем исходный контент
+    setEditedContent(new Map());
+    
+    // Восстанавливаем оригинальный контент для всех элементов
     if (contentRef.current) {
-      window.location.reload(); // Простой способ отменить все изменения
+      const editableElements = contentRef.current.querySelectorAll('[data-editable-id]');
+      editableElements.forEach(element => {
+        const elementId = element.getAttribute('data-editable-id');
+        if (elementId) {
+          // Восстанавливаем оригинальный текст из сохраненной версии
+          const savedContent = localStorage.getItem(`page-content-${window.location.pathname}-${editingLanguage}`);
+          if (savedContent) {
+            const parsed = JSON.parse(savedContent);
+            const savedText = parsed[elementId];
+            if (savedText) {
+              element.textContent = savedText;
+            }
+          }
+        }
+      });
     }
+    
     setHasChanges(false);
     onCancel();
   };
