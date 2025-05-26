@@ -246,6 +246,16 @@ export function setupFiles(app: Express, storageService: IStorage) {
       const userQuota = parseQuota(user.quota);
       const userUsedSpace = parseQuota(user.usedSpace);
       
+      // Отладочная информация
+      console.log('Upload quota check:', {
+        userQuota,
+        userUsedSpace,
+        totalUploadSize,
+        quotaString: user.quota,
+        usedSpaceString: user.usedSpace,
+        available: userQuota - userUsedSpace
+      });
+      
       if (userUsedSpace + totalUploadSize > userQuota) {
         // Удаляем загруженные файлы
         for (const file of files) {
