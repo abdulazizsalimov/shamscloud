@@ -539,35 +539,5 @@ export function setupFiles(app: Express, storageService: IStorage) {
     }
   });
 
-  // Публичное скачивание файла (прямая ссылка)
-  app.get("/api/public/download/:token", async (req: Request, res: Response) => {
-    try {
-      const token = req.params.token;
-      
-      // Найти файл по токену
-      const files = await storageService.searchFiles(0, token, null);
-      const file = files.find(f => f.publicToken === token && f.isPublic);
-      
-      if (!file) {
-        return res.status(404).json({ message: "File not found or not public" });
-      }
-      
-      if (file.shareType !== 'direct') {
-        return res.status(403).json({ message: "Direct download not allowed" });
-      }
-      
-      const filePath = path.join(uploadsDir, file.path);
-      
-      try {
-        await fs.access(filePath);
-      } catch (err) {
-        return res.status(404).json({ message: "File not found on server" });
-      }
-      
-      res.download(filePath, file.name);
-    } catch (error) {
-      console.error("Public download error:", error);
-      res.status(500).json({ message: "An error occurred while downloading file" });
-    }
-  });
+
 }
