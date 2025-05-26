@@ -34,10 +34,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Edit, Plus, Globe } from "lucide-react";
+import { Edit, Plus, Globe, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { TranslationEditModal } from "./TranslationEditModal";
 import { AddLanguageModal } from "./AddLanguageModal";
+import { translations } from "@/i18n/translations";
 
 interface SettingsModalProps {
   open: boolean;
@@ -246,6 +247,51 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     setEditTranslationOpen(true);
   };
 
+  // Handle language deletion
+  const handleDeleteLanguage = (languageCode: string) => {
+    // Не разрешаем удаление основных языков
+    if (languageCode === 'ru' || languageCode === 'en') {
+      toast({
+        title: t("common.error"),
+        description: "Нельзя удалить основные языки (русский и английский)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Подтверждение удаления
+    if (!window.confirm(`Вы уверены, что хотите удалить язык "${languageCode}"? Все переводы будут потеряны.`)) {
+      return;
+    }
+
+    try {
+      // Удаляем язык из списка доступных языков
+      const updatedLanguages = availableLanguages.filter((lang: any) => lang.code !== languageCode);
+      localStorage.setItem('availableLanguages', JSON.stringify(updatedLanguages));
+      setAvailableLanguages(updatedLanguages);
+
+      // Удаляем переводы из localStorage
+      localStorage.removeItem(`translations_${languageCode}`);
+
+      // Удаляем из объекта переводов
+      delete (translations as any)[languageCode];
+
+      // Принудительно обновляем список в других компонентах
+      window.dispatchEvent(new Event('languagesUpdated'));
+
+      toast({
+        title: t("common.success"),
+        description: `Язык "${languageCode}" удален`,
+      });
+    } catch (error) {
+      toast({
+        title: t("common.error"),
+        description: "Ошибка при удалении языка",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -387,15 +433,30 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                               <div className="text-sm text-gray-600 dark:text-gray-400">{language.englishName}</div>
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditTranslation(language.code as "ru" | "en")}
-                            aria-label={t("admin.editTranslation")}
-                            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditTranslation(language.code as "ru" | "en")}
+                              aria-label={t("admin.editTranslation")}
+                              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            
+                            {/* Кнопка удаления - только для не-основных языков */}
+                            {language.code !== 'ru' && language.code !== 'en' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteLanguage(language.code)}
+                                aria-label={t("admin.deleteLanguage")}
+                                className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
