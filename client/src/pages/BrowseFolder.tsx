@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, File, Folder, Lock, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 interface FileItem {
   id: number;
