@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Save, X } from "lucide-react";
+import { Save, X, Globe } from "lucide-react";
 import { useLocale } from "@/providers/LocaleProvider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface EditableContentProps {
   children: React.ReactNode;
@@ -11,10 +18,18 @@ interface EditableContentProps {
 }
 
 export function EditableContent({ children, isEditMode, onSave, onCancel }: EditableContentProps) {
-  const { t } = useLocale();
+  const { t, locale, setLocale } = useLocale();
   const [editingElement, setEditingElement] = useState<HTMLElement | null>(null);
   const [originalContent, setOriginalContent] = useState<string>("");
   const [hasChanges, setHasChanges] = useState(false);
+  const [editingLanguage, setEditingLanguage] = useState<string>(locale);
+  const [availableLanguages, setAvailableLanguages] = useState(() => {
+    const stored = localStorage.getItem('availableLanguages');
+    return stored ? JSON.parse(stored) : [
+      { code: 'ru', name: 'Русский', englishName: 'Russian' },
+      { code: 'en', name: 'English', englishName: 'English' }
+    ];
+  });
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,8 +86,15 @@ export function EditableContent({ children, isEditMode, onSave, onCancel }: Edit
   }, [isEditMode, editingElement]);
 
   const isTextElement = (element: HTMLElement): boolean => {
-    const textTags = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN', 'DIV', 'A', 'LI'];
-    return textTags.includes(element.tagName) && element.textContent?.trim() !== '';
+    // Разрешаем редактирование только заголовков и абзацев
+    const allowedTags = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+    
+    // Проверяем, что это не интерактивный элемент
+    const isInteractive = element.closest('button, a, input, textarea, select, [role="button"]');
+    
+    return allowedTags.includes(element.tagName) && 
+           element.textContent?.trim() !== '' && 
+           !isInteractive;
   };
 
   const removeHighlights = () => {
@@ -92,6 +114,13 @@ export function EditableContent({ children, isEditMode, onSave, onCancel }: Edit
     element.classList.add('editing-active');
     element.classList.remove('editable-highlight');
     element.contentEditable = 'true';
+    
+    // Сохраняем исходный стиль элемента
+    element.style.fontFamily = window.getComputedStyle(element).fontFamily;
+    element.style.fontSize = window.getComputedStyle(element).fontSize;
+    element.style.fontWeight = window.getComputedStyle(element).fontWeight;
+    element.style.color = window.getComputedStyle(element).color;
+    
     element.focus();
     
     // Выделяем весь текст
@@ -131,6 +160,18 @@ export function EditableContent({ children, isEditMode, onSave, onCancel }: Edit
     onCancel();
   };
 
+  const handleLanguageChange = (newLanguage: string) => {
+    setEditingLanguage(newLanguage);
+    // Проверяем, что язык поддерживается
+    if (newLanguage === 'ru' || newLanguage === 'en') {
+      setLocale(newLanguage);
+    }
+    // Сохраняем изменения перед сменой языка
+    if (hasChanges) {
+      setHasChanges(false);
+    }
+  };
+
   if (!isEditMode) {
     return <>{children}</>;
   }
@@ -138,10 +179,28 @@ export function EditableContent({ children, isEditMode, onSave, onCancel }: Edit
   return (
     <div className="relative">
       {/* Панель управления сверху */}
-      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-3 flex items-center space-x-3">
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-3 flex items-center space-x-4">
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {t("admin.editingMode")}
         </span>
+        
+        {/* Селектор языков */}
+        <div className="flex items-center space-x-2">
+          <Globe className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+          <Select value={editingLanguage} onValueChange={handleLanguageChange}>
+            <SelectTrigger className="w-32 h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableLanguages.map((lang: any) => (
+                <SelectItem key={lang.code} value={lang.code} className="text-xs">
+                  {lang.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
         <div className="flex space-x-2">
           <Button
             onClick={handleSave}
