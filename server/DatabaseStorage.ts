@@ -369,7 +369,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFileByPublicToken(token: string): Promise<File | undefined> {
-    const [file] = await db.select().from(files).where(eq(files.public_token, token));
+    console.log('Searching for file by token:', token);
+    
+    const [file] = await db.select().from(files).where(
+      and(
+        eq(files.public_token, token),
+        eq(files.is_public, true)
+      )
+    );
+    
+    console.log('File found:', file ? { id: file.id, name: file.name, isPublic: file.is_public, token: file.public_token } : 'Not found');
+    
     if (!file) return undefined;
     
     return {
