@@ -453,7 +453,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                               aria-label={t("admin.editTranslation")}
                               className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-4 w-4 !text-gray-800 dark:!text-gray-100" />
                             </Button>
                             
                             {/* Кнопка удаления - только для не-основных языков */}
@@ -465,7 +465,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                 aria-label={t("admin.deleteLanguage")}
                                 className="!text-red-600 !border !border-red-400 hover:!bg-red-50 hover:!text-red-800 dark:!text-red-400 dark:!border-red-500 dark:hover:!bg-red-900/20 dark:hover:!text-red-300"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-4 w-4 !text-red-600 dark:!text-red-400" />
                               </Button>
                             )}
                           </div>
@@ -514,7 +514,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         aria-label={t("admin.editHomePage")}
                         className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 !text-gray-800 dark:!text-gray-100" />
                       </Button>
                     </div>
 
@@ -539,7 +539,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         aria-label={t("admin.editAboutPage")}
                         className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 !text-gray-800 dark:!text-gray-100" />
                       </Button>
                     </div>
 
@@ -564,7 +564,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         aria-label={t("admin.editContactsPage")}
                         className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 !text-gray-800 dark:!text-gray-100" />
                       </Button>
                     </div>
                   </div>
