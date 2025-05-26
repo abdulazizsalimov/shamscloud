@@ -395,11 +395,11 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
         return res.status(404).json({ message: "File not found" });
       }
 
-      // Проверяем, что файл находится в этой папке
-      const folderContents = await storage.getFilesByParentId(folder.id, folder.userId);
-      const isFileInFolder = folderContents.some(f => f.id === file.id);
+      // Проверяем, что файл принадлежит этой папке или её подпапкам
+      const fileHierarchy = await storage.getFileHierarchy(file.id);
+      const isFileInMainFolder = fileHierarchy.some(f => f.id === folder.id);
       
-      if (!isFileInFolder) {
+      if (!isFileInMainFolder) {
         return res.status(403).json({ message: "File not accessible" });
       }
 

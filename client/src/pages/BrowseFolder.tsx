@@ -138,11 +138,37 @@ function BrowseFolder() {
     }
   };
 
-  const navigateBack = () => {
+  const navigateBack = async () => {
     if (currentFolderId) {
-      // Если мы находимся во вложенной папке, вернуться к корневой папке
-      setCurrentFolderId(null);
-      loadFolderData();
+      try {
+        setIsLoading(true);
+        // Возвращаемся к корневой папке (без folderId)
+        const response = await fetch(`/api/public/browse/${token}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            password: validPassword 
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Ошибка возврата к корневой папке");
+        }
+
+        const data = await response.json();
+        setFolderData(data);
+        setCurrentFolderId(null);
+      } catch (err) {
+        toast({
+          title: "Ошибка",
+          description: err instanceof Error ? err.message : "Не удалось вернуться к корневой папке",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
