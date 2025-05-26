@@ -39,7 +39,12 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main id="main-content" className="flex-grow">
+      <EditableContent
+        isEditMode={isEditMode}
+        onSave={handleSave}
+        onCancel={handleCancel}
+      >
+        <main id="main-content" className="flex-grow">
         {/* Hero Section */}
         <section className="py-16 md:py-24 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
           <div className="container mx-auto px-4">
@@ -176,7 +181,8 @@ export default function Home() {
             </div>
           </div>
         </section>
-      </main>
+        </main>
+      </EditableContent>
       
       <Footer />
     </div>
