@@ -14,6 +14,9 @@ export default function Home() {
   const { user } = useAuth();
   const [isEditMode, setIsEditMode] = useState(false);
   
+  // Показываем информацию о пользователе в верхней части страницы для отладки
+  console.log('Current user in Home:', user);
+  
   // Применяем сохраненный контент к странице
   usePageContent();
 
@@ -73,6 +76,20 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      
+      {/* Временная кнопка для тестирования режима редактирования */}
+      {user?.role === 'admin' && (
+        <div className="bg-yellow-100 dark:bg-yellow-900 p-2 text-center">
+          <p>Пользователь: {user.name} ({user.role})</p>
+          <Button 
+            onClick={() => setIsEditMode(!isEditMode)} 
+            variant="outline" 
+            size="sm"
+          >
+            {isEditMode ? 'Выключить редактирование' : 'Включить редактирование'}
+          </Button>
+        </div>
+      )}
       
       <EditableContent
         isEditMode={isEditMode}
