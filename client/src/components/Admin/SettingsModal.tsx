@@ -512,7 +512,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         variant="ghost"
                         size="icon"
                         aria-label={t("admin.editPage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                        className="text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-white"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -537,7 +537,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         variant="ghost"
                         size="icon"
                         aria-label={t("admin.editPage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                        className="text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-white"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -562,7 +562,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         variant="ghost"
                         size="icon"
                         aria-label={t("admin.editPage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                        className="text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-white"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
