@@ -39,6 +39,7 @@ function BrowseFolder() {
   const [focusedIndex, setFocusedIndex] = useState(0);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [ariaAnnouncement, setAriaAnnouncement] = useState("");
 
   useEffect(() => {
     loadFolderData();
@@ -72,10 +73,8 @@ function BrowseFolder() {
           setFocusedIndex(newIndex);
           itemRefs.current[newIndex]?.focus();
         } else {
-          // Озвучиваем, что это последний элемент
-          const announcement = `Это последний элемент списка. ${folderData.files[focusedIndex].name}`;
-          const msg = new SpeechSynthesisUtterance(announcement);
-          window.speechSynthesis.speak(msg);
+          // Объявляем для скрин-ридера, что это последний элемент
+          setAriaAnnouncement(`Это последний элемент списка. ${folderData.files[focusedIndex].name}`);
         }
         break;
       case 'ArrowUp':
@@ -85,10 +84,19 @@ function BrowseFolder() {
           setFocusedIndex(newIndex);
           itemRefs.current[newIndex]?.focus();
         } else {
-          // Озвучиваем, что это первый элемент
-          const announcement = `Это первый элемент списка. ${folderData.files[focusedIndex].name}`;
-          const msg = new SpeechSynthesisUtterance(announcement);
-          window.speechSynthesis.speak(msg);
+          // Объявляем для скрин-ридера, что это первый элемент
+          setAriaAnnouncement(`Это первый элемент списка. ${folderData.files[focusedIndex].name}`);
+        }
+        break;
+      case 'Backspace':
+        event.preventDefault();
+        if (currentFolderId) {
+          // Возвращаемся в родительскую папку
+          setAriaAnnouncement("Возвращение в родительскую папку");
+          navigateBack();
+        } else {
+          // Уже в корневой папке
+          setAriaAnnouncement("Вы уже находитесь в корневой папке");
         }
         break;
       case 'Enter':
@@ -97,14 +105,16 @@ function BrowseFolder() {
         const currentFile = folderData.files[focusedIndex];
         if (currentFile) {
           if (currentFile.isFolder) {
+            setAriaAnnouncement(`Открытие папки: ${currentFile.name}`);
             navigateToFolder(currentFile.id);
           } else {
+            setAriaAnnouncement(`Скачивание файла: ${currentFile.name}`);
             handleFileDownload(currentFile.id, currentFile.name);
           }
         }
         break;
     }
-  }, [focusedIndex, folderData]);
+  }, [focusedIndex, folderData, currentFolderId]);
 
   const loadFolderData = async () => {
     try {
@@ -362,6 +372,15 @@ function BrowseFolder() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      {/* ARIA Live регион для объявлений скрин-ридеру */}
+      <div 
+        aria-live="polite" 
+        aria-atomic="true" 
+        className="sr-only"
+        role="status"
+      >
+        {ariaAnnouncement}
+      </div>
       <main className="flex-grow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="container mx-auto px-4 py-8">
         <Card>
@@ -380,7 +399,7 @@ function BrowseFolder() {
             </div>
             <p className="text-gray-600 dark:text-gray-300">
               Нажмите на файл, чтобы скачать его, или на папку, чтобы открыть её. 
-              Используйте стрелки вверх/вниз для навигации, Enter или пробел для активации.
+              Используйте стрелки вверх/вниз для навигации, Enter или пробел для активации, Backspace для возврата назад.
             </p>
           </CardHeader>
           <CardContent>
