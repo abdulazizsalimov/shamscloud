@@ -268,25 +268,8 @@ export function setupFiles(app: Express, storageService: IStorage) {
         available: userQuota - userUsedSpace
       });
       
-      // Временно отключаем проверку квоты полностью
-      /*
-      if (userUsedSpace + totalUploadSize > userQuota) {
-        // Удаляем загруженные файлы
-        for (const file of files) {
-          await fs.unlink(file.path).catch(console.error);
-        }
-        
-        return res.status(400).json({ 
-          message: "Not enough storage space",
-          details: {
-            available: userQuota - userUsedSpace,
-            required: totalUploadSize,
-            used: userUsedSpace,
-            total: userQuota
-          }
-        });
-      }
-      */
+      // Проверка квоты отключена для тестирования
+      console.log("Квота проверка ПРОПУЩЕНА для тестирования");
       
       // Сохраняем файлы в базе данных
       const uploadedFiles = [];
