@@ -186,7 +186,15 @@ export function TranslationEditModal({ open, onOpenChange, language }: Translati
 
   // Определение названия языка для заголовка
   const getLanguageName = () => {
-    return language === "ru" ? "Русский" : "English";
+    const availableLanguages = JSON.parse(localStorage.getItem('availableLanguages') || '[]');
+    const currentLanguage = availableLanguages.find((lang: any) => lang.code === language);
+    
+    if (currentLanguage) {
+      return currentLanguage.name;
+    }
+    
+    // Fallback для основных языков если их нет в localStorage
+    return language === "ru" ? "Русский" : language === "en" ? "English" : language.toUpperCase();
   };
 
   return (
