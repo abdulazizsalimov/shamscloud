@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocale } from "@/providers/LocaleProvider";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { File } from "@shared/schema";
 import {
   Dialog,
@@ -26,95 +24,84 @@ interface ShareModalProps {
 export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
   const { t } = useLocale();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   
   const [shareType, setShareType] = useState<"direct" | "page">("page");
   const [isPasswordProtected, setIsPasswordProtected] = useState(false);
   const [password, setPassword] = useState("");
-  const [shareUrl, setShareUrl] = useState("");
+  const [shareLink, setShareLink] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
 
   if (!file) return null;
 
-  // Проверяем, опубликован ли файл уже
-  const isPublic = file.isPublic || false;
+  const handleShare = async () => {
+    try {
+      const shareData = {
+        shareType,
+        isPasswordProtected,
+        password: isPasswordProtected ? password : null,
+      };
 
-  useEffect(() => {
-    if (file && file.isPublic) {
-      setShareType(file.shareType as "direct" | "page" || "page");
-      setIsPasswordProtected(file.isPasswordProtected || false);
-      
-      // Генерируем URL на основе данных файла
-      const baseUrl = window.location.origin;
-      if (file.shareType === "direct") {
-        setShareUrl(`${baseUrl}/api/public/download/${file.publicToken}`);
-      } else {
-        setShareUrl(`${baseUrl}/shared/${file.publicToken}`);
+      const response = await fetch(`/api/files/${file.id}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(shareData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка создания публичной ссылки');
       }
-    }
-  }, [file]);
 
-  // Мутация для создания публичной ссылки
-  const shareMutation = useMutation({
-    mutationFn: async (shareData: { shareType: string; isPasswordProtected: boolean; password?: string }) => {
-      return apiRequest("POST", `/api/files/${file.id}/share`, shareData);
-    },
-    onSuccess: (data) => {
-      setShareUrl(data.shareUrl);
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      const data = await response.json();
+      setShareLink(data.shareLink);
+      setIsPublic(true);
+      
       toast({
         title: "Файл опубликован",
         description: "Ссылка для публичного доступа создана",
       });
-    },
-    onError: () => {
+    } catch (error) {
       toast({
         title: "Ошибка",
         description: "Не удалось создать публичную ссылку",
         variant: "destructive",
       });
     }
-  });
-
-  // Мутация для отключения публичного доступа
-  const unshareMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest("DELETE", `/api/files/${file.id}/share`);
-    },
-    onSuccess: () => {
-      setShareUrl("");
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
-      toast({
-        title: "Публичный доступ отключен",
-        description: "Файл больше недоступен по ссылке",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось отключить публичный доступ",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleShare = () => {
-    shareMutation.mutate({
-      shareType,
-      isPasswordProtected,
-      password: isPasswordProtected ? password : undefined
-    });
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
+    navigator.clipboard.writeText(shareLink);
     toast({
       title: "Ссылка скопирована",
       description: "Ссылка скопирована в буфер обмена",
     });
   };
 
-  const handleStopSharing = () => {
-    unshareMutation.mutate();
+  const handleStopSharing = async () => {
+    try {
+      const response = await fetch(`/api/files/${file.id}/share`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка отключения публичного доступа');
+      }
+
+      setIsPublic(false);
+      setShareLink("");
+      
+      toast({
+        title: "Публичный доступ отключен",
+        description: "Файл больше недоступен по ссылке",
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отключить публичный доступ",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -122,130 +109,86 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5" />
+            <Globe className="h-5 w-5" />
             Поделиться файлом: {file.name}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {!isPublic ? (
             <>
-              <div className="space-y-4">
-                <Label>Способ публичного доступа:</Label>
-                <RadioGroup value={shareType} onValueChange={(value) => setShareType(value as "direct" | "page")}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="direct" id="direct" />
-                    <Label htmlFor="direct" className="flex items-center gap-2">
-                      <Download className="w-4 h-4" />
-                      Прямая ссылка на скачивание
-                    </Label>
-                  </div>
+              <div className="space-y-3">
+                <Label>Тип ссылки</Label>
+                <RadioGroup value={shareType} onValueChange={(value: "direct" | "page") => setShareType(value)}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="page" id="page" />
                     <Label htmlFor="page" className="flex items-center gap-2">
-                      <Eye className="w-4 h-4" />
-                      Ссылка на страницу загрузки
+                      <Eye className="h-4 w-4" />
+                      Страница просмотра (рекомендуется)
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="direct" id="direct" />
+                    <Label htmlFor="direct" className="flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      Прямая ссылка на скачивание
                     </Label>
                   </div>
                 </RadioGroup>
               </div>
 
-              {shareType === "page" && (
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password-protection" className="flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
-                    Защитить паролем
-                  </Label>
-                  <Switch
-                    id="password-protection"
-                    checked={isPasswordProtected}
-                    onCheckedChange={setIsPasswordProtected}
-                  />
-                </div>
-              )}
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="password-protection"
+                  checked={isPasswordProtected}
+                  onCheckedChange={setIsPasswordProtected}
+                />
+                <Label htmlFor="password-protection" className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Защитить паролем
+                </Label>
+              </div>
 
-              {isPasswordProtected && shareType === "page" && (
+              {isPasswordProtected && (
                 <div className="space-y-2">
-                  <Label htmlFor="password">Пароль для доступа:</Label>
+                  <Label htmlFor="password">Пароль</Label>
                   <Input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Введите пароль"
+                    placeholder="Введите пароль для доступа"
                   />
                 </div>
               )}
 
               <Button onClick={handleShare} className="w-full">
+                <Globe className="h-4 w-4 mr-2" />
                 Создать публичную ссылку
               </Button>
             </>
           ) : (
             <>
-              <div className="space-y-4">
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <p className="text-sm text-green-700 dark:text-green-300 font-medium mb-2">
-                    ✅ Файл доступен по публичной ссылке
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={generateShareLink()}
-                      readOnly
-                      className="flex-1 text-sm"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCopyLink}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
+              <div className="space-y-2">
+                <Label>Публичная ссылка</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    value={shareLink}
+                    readOnly
+                    className="flex-1"
+                  />
+                  <Button onClick={handleCopyLink} size="sm">
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <strong>Тип доступа:</strong> {shareType === "direct" ? "Прямая ссылка" : "Страница загрузки"}
-                  </p>
-                  {isPasswordProtected && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      <strong>Защита:</strong> Требуется пароль
-                    </p>
-                  )}
-                </div>
-
-                {shareType === "page" && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label>Защитить паролем</Label>
-                      <Switch
-                        checked={isPasswordProtected}
-                        onCheckedChange={setIsPasswordProtected}
-                      />
-                    </div>
-                    
-                    {isPasswordProtected && (
-                      <div className="space-y-2">
-                        <Label htmlFor="password-change">Изменить пароль:</Label>
-                        <Input
-                          id="password-change"
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Новый пароль"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <Button
-                  variant="destructive"
-                  onClick={handleStopSharing}
-                  className="w-full"
-                >
-                  Закрыть доступ к файлу
+              <div className="flex space-x-2">
+                <Button variant="outline" onClick={handleStopSharing} className="flex-1">
+                  Отключить доступ
+                </Button>
+                <Button onClick={() => onOpenChange(false)} className="flex-1">
+                  Готово
                 </Button>
               </div>
             </>
