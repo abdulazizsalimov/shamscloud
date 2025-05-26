@@ -66,6 +66,19 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [editTranslationOpen, setEditTranslationOpen] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<"ru" | "en">("ru");
   const [addLanguageOpen, setAddLanguageOpen] = useState(false);
+  const [availableLanguages, setAvailableLanguages] = useState(() => {
+    // Инициализируем базовые языки, если их нет в localStorage
+    const stored = localStorage.getItem('availableLanguages');
+    if (!stored) {
+      const defaultLanguages = [
+        { code: 'ru', name: 'Русский', englishName: 'Russian' },
+        { code: 'en', name: 'English', englishName: 'English' }
+      ];
+      localStorage.setItem('availableLanguages', JSON.stringify(defaultLanguages));
+      return defaultLanguages;
+    }
+    return JSON.parse(stored);
+  });
 
   // Initialize the form with quota settings
   const form = useForm<QuotaSettingsValues>({
@@ -221,6 +234,10 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   // Handle when new language is added
   const handleLanguageAdded = (languageCode: string) => {
+    // Обновляем список доступных языков
+    const updatedLanguages = JSON.parse(localStorage.getItem('availableLanguages') || '[]');
+    setAvailableLanguages(updatedLanguages);
+    
     // Open translation editor for the new language
     setEditingLanguage(languageCode as "ru" | "en");
     setEditTranslationOpen(true);

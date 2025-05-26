@@ -63,11 +63,32 @@ export function AddLanguageModal({ open, onOpenChange, onLanguageAdded }: AddLan
   const onSubmit = async (values: AddLanguageValues) => {
     setIsLoading(true);
     try {
-      // TODO: Здесь будет API вызов для создания нового языка
-      console.log("Adding new language:", values);
+      // Получаем существующие языки из localStorage
+      const availableLanguages = JSON.parse(localStorage.getItem('availableLanguages') || '[]');
       
-      // Имитация задержки создания
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Проверяем, что язык ещё не добавлен
+      const languageExists = availableLanguages.find((lang: any) => lang.code === values.languageCode);
+      if (languageExists) {
+        toast({
+          title: t("common.error"),
+          description: "Язык с таким кодом уже существует",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Добавляем новый язык
+      availableLanguages.push({
+        code: values.languageCode,
+        name: values.nativeName,
+        englishName: values.englishName
+      });
+      
+      // Сохраняем обновленный список
+      localStorage.setItem('availableLanguages', JSON.stringify(availableLanguages));
+      
+      // Имитация задержки
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
         title: t("admin.languageAdded"),
