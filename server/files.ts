@@ -484,8 +484,8 @@ export function setupFiles(app: Express, storageService: IStorage) {
       // Хешируем пароль, если защита паролем включена
       let hashedPassword = null;
       if (isPasswordProtected && password) {
-        const bcrypt = require('bcryptjs');
-        hashedPassword = await bcrypt.hash(password, 10);
+        const bcryptjs = await import('bcryptjs');
+        hashedPassword = await bcryptjs.default.hash(password, 10);
       }
       
       const updatedFile = await storageService.updateFile(fileId, {
