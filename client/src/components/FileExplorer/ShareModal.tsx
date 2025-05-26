@@ -54,7 +54,7 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
       }
 
       const data = await response.json();
-      setShareLink(data.shareLink);
+      setShareLink(data.shareLink || "");
       setIsPublic(true);
       
       toast({
