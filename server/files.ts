@@ -231,9 +231,20 @@ export function setupFiles(app: Express, storageService: IStorage) {
       const files = req.files as Express.Multer.File[];
       const totalUploadSize = files.reduce((acc, file) => acc + file.size, 0);
       
-      // Проверяем, достаточно ли у пользователя места
-      const userQuota = parseInt(user.quota);
-      const userUsedSpace = parseInt(user.usedSpace);
+      // Преобразуем квоту из строки в байты (например, "100GB" -> число байт)
+      const parseQuota = (quota: string): number => {
+        if (quota.endsWith('GB')) {
+          return parseInt(quota.replace('GB', '')) * 1024 * 1024 * 1024;
+        } else if (quota.endsWith('MB')) {
+          return parseInt(quota.replace('MB', '')) * 1024 * 1024;
+        } else if (quota.endsWith('KB')) {
+          return parseInt(quota.replace('KB', '')) * 1024;
+        }
+        return parseInt(quota) || 0;
+      };
+      
+      const userQuota = parseQuota(user.quota);
+      const userUsedSpace = parseQuota(user.usedSpace);
       
       if (userUsedSpace + totalUploadSize > userQuota) {
         // Удаляем загруженные файлы
