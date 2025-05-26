@@ -80,7 +80,7 @@ export function FileList({
 
   // Функция для объявления элемента через ARIA
   const announceItem = useCallback((file: FileType, action?: string) => {
-    const itemType = file.isFolder ? t("dashboard.folder") : t("common.file");
+    const itemType = file.isFolder ? "папка" : "файл";
     const message = action 
       ? `${action} ${itemType}: ${file.name}`
       : `${itemType}: ${file.name}`;
@@ -89,7 +89,7 @@ export function FileList({
     
     // Очищаем объявление через короткое время
     setTimeout(() => setAriaAnnouncement(''), 1000);
-  }, [t]);
+  }, []);
 
   // Функция для объявления границ списка
   const announceBoundary = useCallback((isFirst: boolean) => {
