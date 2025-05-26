@@ -247,6 +247,17 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     setEditTranslationOpen(true);
   };
 
+  // Handle page editing
+  const handleEditPage = (pageType: 'home' | 'about' | 'contacts') => {
+    // Открываем страницу в новой вкладке с параметром редактирования
+    const urls = {
+      home: '/?edit=true',
+      about: '/about?edit=true',
+      contacts: '/contacts?edit=true'
+    };
+    window.open(urls[pageType], '_blank');
+  };
+
   // Handle language deletion
   const handleDeleteLanguage = (languageCode: string) => {
     // Не разрешаем удаление основных языков
@@ -511,6 +522,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleEditPage('home')}
                         aria-label={t("admin.editHomePage")}
                         className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >
@@ -536,6 +548,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleEditPage('about')}
                         aria-label={t("admin.editAboutPage")}
                         className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >
