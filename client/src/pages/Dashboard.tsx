@@ -301,6 +301,22 @@ export default function Dashboard() {
       });
     }
   };
+
+  // Handle navigate back to parent folder
+  const handleNavigateBack = () => {
+    if (pathHistory.length > 1) {
+      // Переходим к предыдущему элементу в истории пути
+      const parentPath = pathHistory[pathHistory.length - 2];
+      console.log(`Navigating back to: ${parentPath.name} (ID: ${parentPath.id})`);
+      
+      // Обновляем состояние
+      setCurrentPath(parentPath.id);
+      setPathHistory(prev => prev.slice(0, -1));
+      
+      // Принудительно инвалидируем кеш для родительской папки
+      queryClient.invalidateQueries({ queryKey: ["/api/files", parentPath.id] });
+    }
+  };
   
   // Handle file download
   const handleFileDownload = async (file: File) => {
@@ -506,6 +522,7 @@ export default function Dashboard() {
               files={files}
               currentPath={currentPath}
               onFolderClick={handleFolderClick}
+              onNavigateBack={handleNavigateBack}
               onFileDownload={handleFileDownload}
               onFileShare={handleFileShare}
               onFileRename={handleFileRename}
