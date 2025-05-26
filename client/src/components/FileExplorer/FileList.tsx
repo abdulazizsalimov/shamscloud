@@ -94,14 +94,14 @@ export function FileList({
   // Функция для объявления границ списка
   const announceBoundary = useCallback((isFirst: boolean) => {
     const message = isFirst 
-      ? t("accessibility.firstItem")
-      : t("accessibility.lastItem");
+      ? "Это первый элемент списка"
+      : "Это последний элемент списка";
     
     setAriaAnnouncement(message);
     
     // Очищаем объявление через короткое время
     setTimeout(() => setAriaAnnouncement(''), 1000);
-  }, [t]);
+  }, []);
 
   // Обработка клавиатурной навигации
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
