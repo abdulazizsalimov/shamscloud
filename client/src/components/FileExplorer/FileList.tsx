@@ -40,6 +40,7 @@ interface FileListProps {
   files: FileType[];
   currentPath: number | null;
   onFolderClick: (folderId: number) => void;
+  onNavigateBack?: () => void;
   onFileDownload: (file: FileType) => void;
   onFileShare: (file: FileType) => void;
   onFileRename: (file: FileType, newName: string) => void;
@@ -50,6 +51,7 @@ export function FileList({
   files,
   currentPath,
   onFolderClick,
+  onNavigateBack,
   onFileDownload,
   onFileShare,
   onFileRename,
@@ -191,13 +193,13 @@ export function FileList({
       case 'Backspace':
         event.preventDefault();
         // Возврат к родительской папке
-        if (currentPath !== null) {
+        if (currentPath !== null && onNavigateBack) {
           setAriaAnnouncement("Возврат к родительской папке");
-          onFolderClick(null); // Переход к корневой папке или родительской
+          onNavigateBack(); // Используем функцию навигации назад
         }
         break;
     }
-  }, [files, focusedIndex, onFolderClick, onFileDownload, announceItem, announceBoundary, currentPath]);
+  }, [files, focusedIndex, onFolderClick, onFileDownload, announceItem, announceBoundary, currentPath, onNavigateBack]);
 
   // Добавление/удаление обработчика клавиш
   useEffect(() => {
