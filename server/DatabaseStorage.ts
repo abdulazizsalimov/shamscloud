@@ -37,7 +37,6 @@ export class DatabaseStorage implements IStorage {
     if (!user) return undefined;
     
     // Используем адаптер из db-adapter.ts для преобразования полей
-    const { adaptUserFromDb } = require('./db-adapter');
     return adaptUserFromDb(user);
   }
 
