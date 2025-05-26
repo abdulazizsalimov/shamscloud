@@ -439,4 +439,109 @@ export function setupFiles(app: Express, storageService: IStorage) {
       }
     }
   });
+
+  // API для публичного доступа к файлам
+  
+  // Настройка публичного доступа к файлу
+  app.post("/api/files/:id/share", authGuard, async (req: Request, res: Response) => {
+    try {
+      const fileId = parseInt(req.params.id);
+      const userId = (req as any).user.id;
+      const { shareType, isPasswordProtected, password } = req.body;
+      
+      const file = await storageService.getFile(fileId);
+      
+      if (!file) {
+        return res.status(404).json({ message: "File not found" });
+      }
+      
+      if (file.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Генерируем уникальный токен
+      const publicToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      
+      const updatedFile = await storageService.updateFile(fileId, {
+        isPublic: true,
+        publicToken,
+        shareType,
+        isPasswordProtected: isPasswordProtected || false,
+        sharePassword: isPasswordProtected ? password : null
+      });
+      
+      res.json({ 
+        file: updatedFile, 
+        shareUrl: shareType === 'direct' 
+          ? `${req.protocol}://${req.get('host')}/api/public/download/${publicToken}`
+          : `${req.protocol}://${req.get('host')}/shared/${publicToken}`
+      });
+    } catch (error) {
+      console.error("Share file error:", error);
+      res.status(500).json({ message: "An error occurred while sharing file" });
+    }
+  });
+
+  // Отключение публичного доступа
+  app.delete("/api/files/:id/share", authGuard, async (req: Request, res: Response) => {
+    try {
+      const fileId = parseInt(req.params.id);
+      const userId = (req as any).user.id;
+      
+      const file = await storageService.getFile(fileId);
+      
+      if (!file) {
+        return res.status(404).json({ message: "File not found" });
+      }
+      
+      if (file.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const updatedFile = await storageService.updateFile(fileId, {
+        isPublic: false,
+        publicToken: null,
+        shareType: null,
+        isPasswordProtected: false,
+        sharePassword: null
+      });
+      
+      res.json(updatedFile);
+    } catch (error) {
+      console.error("Unshare file error:", error);
+      res.status(500).json({ message: "An error occurred while unsharing file" });
+    }
+  });
+
+  // Публичное скачивание файла (прямая ссылка)
+  app.get("/api/public/download/:token", async (req: Request, res: Response) => {
+    try {
+      const token = req.params.token;
+      
+      // Найти файл по токену
+      const files = await storageService.searchFiles(0, token, null);
+      const file = files.find(f => f.publicToken === token && f.isPublic);
+      
+      if (!file) {
+        return res.status(404).json({ message: "File not found or not public" });
+      }
+      
+      if (file.shareType !== 'direct') {
+        return res.status(403).json({ message: "Direct download not allowed" });
+      }
+      
+      const filePath = path.join(uploadsDir, file.path);
+      
+      try {
+        await fs.access(filePath);
+      } catch (err) {
+        return res.status(404).json({ message: "File not found on server" });
+      }
+      
+      res.download(filePath, file.name);
+    } catch (error) {
+      console.error("Public download error:", error);
+      res.status(500).json({ message: "An error occurred while downloading file" });
+    }
+  });
 }

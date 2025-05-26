@@ -247,6 +247,13 @@ export function FileList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Share Modal */}
+      <ShareModal
+        file={fileToShare}
+        open={shareModalOpen}
+        onOpenChange={setShareModalOpen}
+      />
     </div>
   );
 }

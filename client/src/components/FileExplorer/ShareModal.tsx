@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocale } from "@/providers/LocaleProvider";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { File } from "@shared/schema";
 import {
   Dialog,
@@ -24,55 +26,87 @@ interface ShareModalProps {
 export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
   const { t } = useLocale();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [shareType, setShareType] = useState<"direct" | "page">("page");
   const [isPasswordProtected, setIsPasswordProtected] = useState(false);
   const [password, setPassword] = useState("");
-  const [isPublic, setIsPublic] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
 
   if (!file) return null;
 
-  const generateShareLink = () => {
-    const token = Math.random().toString(36).substring(2, 15);
-    const baseUrl = window.location.origin;
-    
-    if (shareType === "direct") {
-      return `${baseUrl}/api/public/download/${token}`;
-    } else {
-      return `${baseUrl}/shared/${token}`;
-    }
-  };
+  // Проверяем, опубликован ли файл уже
+  const isPublic = file.isPublic || false;
 
-  const handleShare = async () => {
-    try {
-      const shareData = {
-        fileId: file.id,
-        shareType,
-        isPasswordProtected,
-        password: isPasswordProtected ? password : null,
-        isPublic: true
-      };
-
-      // Здесь будет API вызов для сохранения настроек публичного доступа
-      console.log("Share settings:", shareData);
+  useEffect(() => {
+    if (file && file.isPublic) {
+      setShareType(file.shareType as "direct" | "page" || "page");
+      setIsPasswordProtected(file.isPasswordProtected || false);
       
-      setIsPublic(true);
+      // Генерируем URL на основе данных файла
+      const baseUrl = window.location.origin;
+      if (file.shareType === "direct") {
+        setShareUrl(`${baseUrl}/api/public/download/${file.publicToken}`);
+      } else {
+        setShareUrl(`${baseUrl}/shared/${file.publicToken}`);
+      }
+    }
+  }, [file]);
+
+  // Мутация для создания публичной ссылки
+  const shareMutation = useMutation({
+    mutationFn: async (shareData: { shareType: string; isPasswordProtected: boolean; password?: string }) => {
+      return apiRequest("POST", `/api/files/${file.id}/share`, shareData);
+    },
+    onSuccess: (data) => {
+      setShareUrl(data.shareUrl);
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
       toast({
         title: "Файл опубликован",
         description: "Ссылка для публичного доступа создана",
       });
-    } catch (error) {
+    },
+    onError: () => {
       toast({
         title: "Ошибка",
         description: "Не удалось создать публичную ссылку",
         variant: "destructive",
       });
     }
+  });
+
+  // Мутация для отключения публичного доступа
+  const unshareMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("DELETE", `/api/files/${file.id}/share`);
+    },
+    onSuccess: () => {
+      setShareUrl("");
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      toast({
+        title: "Публичный доступ отключен",
+        description: "Файл больше недоступен по ссылке",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отключить публичный доступ",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleShare = () => {
+    shareMutation.mutate({
+      shareType,
+      isPasswordProtected,
+      password: isPasswordProtected ? password : undefined
+    });
   };
 
   const handleCopyLink = () => {
-    const link = generateShareLink();
-    navigator.clipboard.writeText(link);
+    navigator.clipboard.writeText(shareUrl);
     toast({
       title: "Ссылка скопирована",
       description: "Ссылка скопирована в буфер обмена",
@@ -80,11 +114,7 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
   };
 
   const handleStopSharing = () => {
-    setIsPublic(false);
-    toast({
-      title: "Публичный доступ отключен",
-      description: "Файл больше недоступен по ссылке",
-    });
+    unshareMutation.mutate();
   };
 
   return (
