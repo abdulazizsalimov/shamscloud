@@ -19,6 +19,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/hooks/use-toast";
 import { translations } from "@/i18n/translations";
+import { Download, Upload } from "lucide-react";
 
 interface TranslationEditModalProps {
   open: boolean;
@@ -194,16 +195,138 @@ export function TranslationEditModal({ open, onOpenChange, language }: Translati
     }
     
     // Fallback для основных языков если их нет в localStorage
-    return language === "ru" ? "Русский" : language === "en" ? "English" : language.toUpperCase();
+    return language === "ru" ? "Русский" : language === "en" ? "English" : (language as string).toUpperCase();
+  };
+
+  // Функция экспорта в CSV
+  const handleExportCSV = () => {
+    const csvData = translationEntries.map(entry => [
+      entry.key,
+      entry.englishText,
+      getCurrentValue(entry)
+    ]);
+    
+    // Добавляем заголовки
+    csvData.unshift(['Key', 'English Text', 'Translation']);
+    
+    // Конвертируем в CSV формат
+    const csvContent = csvData.map(row => 
+      row.map(field => `"${field.replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+    
+    // Создаем и скачиваем файл
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `translations_${language}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: t("common.success"),
+      description: `Переводы экспортированы в CSV файл`,
+    });
+  };
+
+  // Функция импорта из CSV
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const csv = e.target?.result as string;
+        const lines = csv.split('\n');
+        
+        // Пропускаем заголовок
+        const dataLines = lines.slice(1);
+        
+        const newTranslations: Record<string, string> = {};
+        
+        dataLines.forEach(line => {
+          if (line.trim()) {
+            // Простой парсер CSV (для корректной работы с запятыми внутри кавычек)
+            const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+            if (matches && matches.length >= 3) {
+              const key = matches[0].replace(/^"|"$/g, '').replace(/""/g, '"');
+              const translation = matches[2].replace(/^"|"$/g, '').replace(/""/g, '"');
+              
+              if (key && translation) {
+                newTranslations[key] = translation;
+              }
+            }
+          }
+        });
+        
+        // Обновляем отредактированные переводы
+        setEditedTranslations(prev => ({
+          ...prev,
+          ...newTranslations
+        }));
+        
+        toast({
+          title: t("common.success"),
+          description: `Импортировано ${Object.keys(newTranslations).length} переводов из CSV файла`,
+        });
+        
+      } catch (error) {
+        toast({
+          title: t("common.error"),
+          description: "Ошибка при импорте CSV файла. Проверьте формат файла.",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    reader.readAsText(file);
+    // Очищаем input для повторного использования
+    event.target.value = '';
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[80vh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <DialogHeader className="border-b pb-4">
-          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-            {t("admin.editTranslation")} - {getLanguageName()}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t("admin.editTranslation")} - {getLanguageName()}
+            </DialogTitle>
+            <div className="flex items-center space-x-2">
+              {/* Кнопка экспорта CSV */}
+              <Button
+                onClick={handleExportCSV}
+                variant="outline"
+                size="sm"
+                className="border-gray-300 dark:border-gray-600"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Экспорт CSV
+              </Button>
+              
+              {/* Кнопка импорта CSV */}
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleImportCSV}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  id="csv-import"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 dark:border-gray-600"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Импорт CSV
+                </Button>
+              </div>
+            </div>
+          </div>
         </DialogHeader>
         
         <div className="flex-1 overflow-hidden">
