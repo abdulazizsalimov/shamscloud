@@ -371,6 +371,7 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
 
       // Получаем содержимое вложенной папки
       const folderContents = await storage.getFilesByParentId(targetFolder.id, mainFolder.userId);
+      console.log('Subfolder contents:', folderContents);
       
       const transformedFiles = folderContents.map(file => ({
         id: file.id,
@@ -380,12 +381,17 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
         type: file.isFolder ? "folder" : file.type,
       }));
 
-      res.json({
+      console.log('Transformed files for subfolder:', transformedFiles);
+
+      const responseData = {
         name: targetFolder.name,
         files: transformedFiles,
         isPasswordProtected: mainFolder.isPasswordProtected,
         parentId: targetFolder.parentId,
-      });
+      };
+
+      console.log('Sending subfolder response:', responseData);
+      res.json(responseData);
     } catch (error) {
       console.error("Error browsing subfolder:", error);
       res.status(500).json({ message: "Internal server error" });
