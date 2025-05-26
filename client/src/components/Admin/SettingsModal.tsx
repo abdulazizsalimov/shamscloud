@@ -574,6 +574,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleEditPage('contacts')}
                         aria-label={t("admin.editContactsPage")}
                         className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >

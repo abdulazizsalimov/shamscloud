@@ -4,9 +4,36 @@ import { Footer } from "@/components/Footer";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Shield, Accessibility, Zap, Users } from "lucide-react";
+import { EditableContent } from "@/components/EditableContent";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const { t } = useLocale();
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  useEffect(() => {
+    // Проверяем параметр edit в URL
+    const urlParams = new URLSearchParams(window.location.search);
+    setIsEditMode(urlParams.get('edit') === 'true');
+  }, []);
+
+  const handleSave = () => {
+    // Здесь можно сохранить изменения на сервер
+    console.log('Saving changes...');
+    setIsEditMode(false);
+    // Убираем параметр edit из URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('edit');
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  const handleCancel = () => {
+    setIsEditMode(false);
+    // Убираем параметр edit из URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('edit');
+    window.history.replaceState({}, '', url.toString());
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
