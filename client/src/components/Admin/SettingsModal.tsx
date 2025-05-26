@@ -511,8 +511,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label={t("admin.editPage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-white"
+                        aria-label={t("admin.editHomePage")}
+                        className="text-gray-600 hover:text-gray-800 dark:text-white dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -536,8 +536,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label={t("admin.editPage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-white"
+                        aria-label={t("admin.editAboutPage")}
+                        className="text-gray-600 hover:text-gray-800 dark:text-white dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -561,8 +561,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label={t("admin.editPage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-white"
+                        aria-label={t("admin.editContactsPage")}
+                        className="text-gray-600 hover:text-gray-800 dark:text-white dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
