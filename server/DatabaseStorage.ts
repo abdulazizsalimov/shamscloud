@@ -572,6 +572,26 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getFileByPublicToken(token: string): Promise<File | undefined> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM files 
+        WHERE public_token = ${token} AND is_public = true
+        LIMIT 1
+      `);
+      
+      if (!result.rows || result.rows.length === 0) {
+        return undefined;
+      }
+      
+      const file = result.rows[0];
+      return adaptFileFromDb(file);
+    } catch (error) {
+      console.error("Error finding file by public token:", error);
+      return undefined;
+    }
+  }
+
   async getFileHierarchy(fileId: number): Promise<File[]> {
     const result: File[] = [];
     let currentId: number | null = fileId;
