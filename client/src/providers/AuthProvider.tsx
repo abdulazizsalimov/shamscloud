@@ -31,7 +31,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Fetch current user
   const { data: user, isLoading } = useQuery<User | null>({
     queryKey: ["/api/auth/me"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (response.status === 401) {
+          return null; // Пользователь не авторизован
+        }
+        if (!response.ok) {
+          throw new Error("Failed to fetch user");
+        }
+        return await response.json();
+      } catch (error) {
+        return null;
+      }
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 

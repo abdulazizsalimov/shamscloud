@@ -30,16 +30,21 @@ export default function Home() {
     
     // Если пользователь еще загружается, ждем
     if (user === undefined) {
+      console.log('Пользователь еще загружается...');
       return;
     }
     
+    console.log('Данные пользователя:', user);
     const isAdmin = user?.role === 'admin';
+    console.log('Является ли администратором:', isAdmin);
     
     // Режим редактирования доступен только администраторам
     if (isAdmin) {
+      console.log('Включаем режим редактирования');
       setIsEditMode(true);
     } else {
       // Если пользователь не админ, убираем параметр из URL
+      console.log('Пользователь не администратор, отключаем режим редактирования');
       setIsEditMode(false);
       const url = new URL(window.location.href);
       url.searchParams.delete('edit');
