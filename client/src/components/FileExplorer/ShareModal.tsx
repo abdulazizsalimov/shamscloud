@@ -28,6 +28,15 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
   const [shareType, setShareType] = useState<"direct" | "page">("page");
   const [isPasswordProtected, setIsPasswordProtected] = useState(false);
   const [password, setPassword] = useState("");
+
+  // Автоматически отключаем защиту паролем при выборе прямой ссылки
+  const handleShareTypeChange = (value: "direct" | "page") => {
+    setShareType(value);
+    if (value === "direct") {
+      setIsPasswordProtected(false);
+      setPassword("");
+    }
+  };
   const [shareLink, setShareLink] = useState("");
   const [isPublic, setIsPublic] = useState(false);
 
@@ -123,7 +132,7 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
             <>
               <div className="space-y-3">
                 <Label>Тип ссылки</Label>
-                <RadioGroup value={shareType} onValueChange={(value: "direct" | "page") => setShareType(value)}>
+                <RadioGroup value={shareType} onValueChange={handleShareTypeChange}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="page" id="page" />
                     <Label htmlFor="page" className="flex items-center gap-2">
@@ -146,10 +155,19 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
                   id="password-protection"
                   checked={isPasswordProtected}
                   onCheckedChange={setIsPasswordProtected}
+                  disabled={shareType === "direct"}
                 />
-                <Label htmlFor="password-protection" className="flex items-center gap-2">
+                <Label 
+                  htmlFor="password-protection" 
+                  className={`flex items-center gap-2 ${shareType === "direct" ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
                   <Lock className="h-4 w-4" />
                   Защитить паролем
+                  {shareType === "direct" && (
+                    <span className="text-xs text-muted-foreground ml-1">
+                      (недоступно для прямых ссылок)
+                    </span>
+                  )}
                 </Label>
               </div>
 
