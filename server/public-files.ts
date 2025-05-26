@@ -7,10 +7,9 @@ import path from "path";
 import fs from "fs";
 
 const shareSettingsSchema = z.object({
-  fileId: z.number(),
   shareType: z.enum(["direct", "page"]),
   isPasswordProtected: z.boolean(),
-  password: z.string().optional(),
+  password: z.string().nullable().optional(),
 });
 
 export function setupPublicFiles(app: Express, storage: IStorage) {
