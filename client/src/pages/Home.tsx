@@ -14,8 +14,7 @@ export default function Home() {
   const { user } = useAuth();
   const [isEditMode, setIsEditMode] = useState(false);
   
-  // Показываем информацию о пользователе в верхней части страницы для отладки
-  console.log('Current user in Home:', user);
+
   
   // Применяем сохраненный контент к странице
   usePageContent();
@@ -31,23 +30,14 @@ export default function Home() {
       return;
     }
     
-    // Если пользователь еще загружается, ждем
-    if (user === undefined) {
-      console.log('Пользователь еще загружается...');
-      return;
-    }
-    
-    console.log('Данные пользователя:', user);
+    // Проверяем права администратора
     const isAdmin = user?.role === 'admin';
-    console.log('Является ли администратором:', isAdmin);
     
     // Режим редактирования доступен только администраторам
-    if (isAdmin) {
-      console.log('Включаем режим редактирования');
+    if (user && isAdmin) {
       setIsEditMode(true);
     } else {
-      // Если пользователь не админ, убираем параметр из URL
-      console.log('Пользователь не администратор, отключаем режим редактирования');
+      // Если пользователь не админ или не авторизован, убираем параметр из URL
       setIsEditMode(false);
       const url = new URL(window.location.href);
       url.searchParams.delete('edit');
@@ -76,20 +66,6 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
-      {/* Временная кнопка для тестирования режима редактирования */}
-      {user?.role === 'admin' && (
-        <div className="bg-yellow-100 dark:bg-yellow-900 p-2 text-center">
-          <p>Пользователь: {user.name} ({user.role})</p>
-          <Button 
-            onClick={() => setIsEditMode(!isEditMode)} 
-            variant="outline" 
-            size="sm"
-          >
-            {isEditMode ? 'Выключить редактирование' : 'Включить редактирование'}
-          </Button>
-        </div>
-      )}
       
       <EditableContent
         isEditMode={isEditMode}

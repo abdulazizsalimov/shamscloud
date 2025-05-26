@@ -25,18 +25,14 @@ export default function About() {
       return;
     }
     
-    // Если пользователь еще загружается, ждем
-    if (user === undefined) {
-      return;
-    }
-    
+    // Проверяем права администратора
     const isAdmin = user?.role === 'admin';
     
     // Режим редактирования доступен только администраторам
-    if (isAdmin) {
+    if (user && isAdmin) {
       setIsEditMode(true);
     } else {
-      // Если пользователь не админ, убираем параметр из URL
+      // Если пользователь не админ или не авторизован, убираем параметр из URL
       setIsEditMode(false);
       const url = new URL(window.location.href);
       url.searchParams.delete('edit');
