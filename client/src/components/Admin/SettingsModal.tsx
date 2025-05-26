@@ -451,7 +451,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                               size="icon"
                               onClick={() => handleEditTranslation(language.code as "ru" | "en")}
                               aria-label={t("admin.editTranslation")}
-                              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                              className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -463,7 +463,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                 size="icon"
                                 onClick={() => handleDeleteLanguage(language.code)}
                                 aria-label={t("admin.deleteLanguage")}
-                                className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                className="!text-red-600 !border !border-red-400 hover:!bg-red-50 hover:!text-red-800 dark:!text-red-400 dark:!border-red-500 dark:hover:!bg-red-900/20 dark:hover:!text-red-300"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -512,7 +512,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         variant="ghost"
                         size="icon"
                         aria-label={t("admin.editHomePage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-white dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -537,7 +537,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         variant="ghost"
                         size="icon"
                         aria-label={t("admin.editAboutPage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-white dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -562,7 +562,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                         variant="ghost"
                         size="icon"
                         aria-label={t("admin.editContactsPage")}
-                        className="text-gray-600 hover:text-gray-800 dark:text-white dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="!text-gray-800 !border !border-gray-400 hover:!bg-gray-100 hover:!text-gray-900 dark:!text-gray-100 dark:!border-gray-500 dark:hover:!bg-gray-700 dark:hover:!text-white"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
