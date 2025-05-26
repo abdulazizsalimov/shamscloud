@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Edit, Plus, Globe, Trash2 } from "lucide-react";
+import { Edit, Plus, Globe, Trash2, FileText, Pencil } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { TranslationEditModal } from "./TranslationEditModal";
 import { AddLanguageModal } from "./AddLanguageModal";
@@ -327,6 +327,18 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   <Globe className="h-4 w-4 mr-2" />
                   {t("admin.multilingualSettings")}
                 </TabsTrigger>
+                <TabsTrigger
+                  value="pages"
+                  onClick={() => setActiveTab("pages")}
+                  className={`justify-start px-4 py-2 mb-1 text-left ${
+                    activeTab === "pages" 
+                      ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" 
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  {t("admin.pageManagement")}
+                </TabsTrigger>
               </TabsList>
             </div>
             
@@ -465,6 +477,101 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                     <p className="text-sm text-blue-800 dark:text-blue-200">
                       {t("admin.multilingualDescription")}
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Page Management Tab */}
+              <TabsContent value="pages" className="flex-1 overflow-auto">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">{t("admin.pageManagement")}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+                      {t("admin.pageManagementDescription")}
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Home Page */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                            {t("nav.home")}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {t("admin.homePageDescription")}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t("admin.editPage")}
+                        className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* About Page */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                            {t("nav.about")}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {t("admin.aboutPageDescription")}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t("admin.editPage")}
+                        className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Contacts Page */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                            {t("nav.contacts")}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {t("admin.contactsPageDescription")}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t("admin.editPage")}
+                        className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                    <p className="text-sm text-green-800 dark:text-green-200">
+                      {t("admin.pageEditingNote")}
                     </p>
                   </div>
                 </div>
