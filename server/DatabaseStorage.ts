@@ -1,10 +1,12 @@
 import { db } from './db';
-import { users, files, type User, type InsertUser, type File, type InsertFile } from '@shared/schema';
+import { users, files, verificationTokens, type User, type InsertUser, type File, type InsertFile, type VerificationToken } from '@shared/schema';
 import { eq, like, sql, isNull, and, or } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
 import { IStorage } from './storage';
 import bcrypt from 'bcryptjs';
+import { adaptUserFromDb, adaptFileFromDb } from './db-adapter';
+import { nanoid } from 'nanoid';
 
 /**
  * Реализация хранилища на базе PostgreSQL
@@ -36,8 +38,19 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     if (!user) return undefined;
     
-    // Используем адаптер из db-adapter.ts для преобразования полей
-    return adaptUserFromDb(user);
+    // Простое преобразование полей из базы в объект User
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      password: user.password,
+      role: user.role,
+      quota: user.quota,
+      usedSpace: user.used_space,
+      isBlocked: user.is_blocked,
+      isEmailVerified: user.is_email_verified,
+      createdAt: user.created_at
+    };
   }
 
   async createUser(userData: InsertUser): Promise<User> {

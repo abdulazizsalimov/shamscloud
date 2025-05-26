@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
-import { storage } from "./DatabaseStorage";
+import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { setupFiles } from "./files";
 import { setupSettings } from "./settings";
