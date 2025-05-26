@@ -253,7 +253,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     const urls = {
       home: '/?edit=true',
       about: '/about?edit=true',
-      contacts: '/contacts?edit=true'
+      contacts: '/contact?edit=true'  // Исправляем URL с /contacts на /contact
     };
     window.open(urls[pageType], '_blank');
   };
