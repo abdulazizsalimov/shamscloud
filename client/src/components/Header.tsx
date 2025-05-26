@@ -27,7 +27,8 @@ export function Header() {
   
   const isActive = (path: string) => location === path;
   
-  const navItems = [
+  // Показываем информационные страницы только неавторизованным пользователям
+  const navItems = user ? [] : [
     { label: t("common.home"), path: "/" },
     { label: t("common.about"), path: "/about" },
     { label: t("common.contact"), path: "/contact" },
