@@ -71,6 +71,7 @@ function BrowseFolder() {
     }
 
     try {
+      console.log('Sending password:', password);
       const response = await fetch(`/api/public/browse/${token}`, {
         method: "POST",
         headers: {
