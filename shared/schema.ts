@@ -36,6 +36,12 @@ export const files = pgTable("files", {
   is_folder: boolean("is_folder").notNull().default(false),
   parent_id: integer("parent_id"),
   user_id: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  // Поля для публичного доступа
+  is_public: boolean("is_public").notNull().default(false),
+  public_token: text("public_token"),
+  share_type: text("share_type"), // 'direct' или 'page'
+  is_password_protected: boolean("is_password_protected").notNull().default(false),
+  share_password: text("share_password"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -56,9 +62,14 @@ export const insertFileSchema = createInsertSchema(files).pick({
   path: true,
   type: true,
   size: true,
-  isFolder: true,
-  parentId: true,
-  userId: true,
+  is_folder: true,
+  parent_id: true,
+  user_id: true,
+  is_public: true,
+  public_token: true,
+  share_type: true,
+  is_password_protected: true,
+  share_password: true,
 });
 
 // Types - с ручной настройкой для совместимости с базой данных
@@ -93,6 +104,12 @@ export interface File {
   isFolder: boolean;
   parentId: number | null;
   userId: number;
+  // Поля для публичного доступа
+  isPublic: boolean;
+  publicToken: string | null;
+  shareType: string | null;
+  isPasswordProtected: boolean;
+  sharePassword: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
