@@ -38,7 +38,9 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
       // Хешируем пароль, если защита паролем включена
       let hashedPassword = null;
       if (body.isPasswordProtected && body.password) {
+        console.log('Hashing password:', body.password);
         hashedPassword = await bcrypt.hash(body.password, 10);
+        console.log('Password hashed successfully, length:', hashedPassword.length);
       }
 
       // Обновляем файл с настройками публичного доступа
