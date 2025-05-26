@@ -49,7 +49,27 @@ export function TranslationEditModal({ open, onOpenChange, language }: Translati
         entries.push(...flattenTranslations(obj[key], fullKey));
       } else if (typeof obj[key] === 'string') {
         const englishText = getNestedValue(translations.en, fullKey) || '';
-        const translatedText = getNestedValue(translations[language], fullKey) || '';
+        
+        // Получаем переводы для текущего языка
+        let currentLanguageTranslations = (translations as any)[language];
+        
+        // Если языка нет, проверяем localStorage
+        if (!currentLanguageTranslations) {
+          const savedTranslations = localStorage.getItem(`translations_${language}`);
+          if (savedTranslations) {
+            try {
+              currentLanguageTranslations = JSON.parse(savedTranslations);
+            } catch (error) {
+              // Если не удалось загрузить, используем русские переводы как основу
+              currentLanguageTranslations = translations.ru;
+            }
+          } else {
+            // Используем русские переводы как основу для нового языка
+            currentLanguageTranslations = translations.ru;
+          }
+        }
+        
+        const translatedText = getNestedValue(currentLanguageTranslations, fullKey) || '';
         
         entries.push({
           key: fullKey,
@@ -95,6 +115,25 @@ export function TranslationEditModal({ open, onOpenChange, language }: Translati
   const handleSave = async () => {
     setIsLoading(true);
     try {
+      // Получаем или создаем объект переводов для языка
+      let languageTranslations = (translations as any)[language];
+      
+      // Если языка нет в основном объекте, создаем его
+      if (!languageTranslations) {
+        // Проверяем есть ли сохраненные переводы
+        const savedTranslations = localStorage.getItem(`translations_${language}`);
+        if (savedTranslations) {
+          try {
+            languageTranslations = JSON.parse(savedTranslations);
+          } catch (error) {
+            languageTranslations = JSON.parse(JSON.stringify(translations.ru));
+          }
+        } else {
+          languageTranslations = JSON.parse(JSON.stringify(translations.ru));
+        }
+        (translations as any)[language] = languageTranslations;
+      }
+      
       // Обновляем переводы в основном объекте translations
       for (const [key, value] of Object.entries(editedTranslations)) {
         const keys = key.split('.');
