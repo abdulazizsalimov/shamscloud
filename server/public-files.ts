@@ -91,7 +91,15 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
       }
 
       // Отправляем файл
-      const filePath = path.join(process.cwd(), file.path);
+      const filePath = path.join(process.cwd(), 'uploads', file.path);
+      
+      console.log('Public download attempt:', {
+        token,
+        fileId: file.id,
+        fileName: file.name,
+        filePath,
+        filePathExists: fs.existsSync(filePath)
+      });
       
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: "File not found on disk" });
@@ -139,8 +147,7 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
       const { password } = req.body;
       
       // Находим файл по токену
-      const files = await storage.searchFiles(0, token);
-      const file = files.find(f => f.publicToken === token && f.isPublic);
+      const file = await storage.getFileByPublicToken(token);
       
       if (!file) {
         return res.status(404).json({ message: "File not found or not public" });
@@ -159,7 +166,15 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
       }
 
       // Отправляем файл
-      const filePath = path.join(process.cwd(), file.path);
+      const filePath = path.join(process.cwd(), 'uploads', file.path);
+      
+      console.log('Protected download attempt:', {
+        token,
+        fileId: file.id,
+        fileName: file.name,
+        filePath,
+        filePathExists: fs.existsSync(filePath)
+      });
       
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: "File not found on disk" });
