@@ -381,7 +381,7 @@ function BrowseFolder() {
       >
         {ariaAnnouncement}
       </div>
-      <main className="flex-grow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <main id="main-content" className="flex-grow bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader>
