@@ -27,6 +27,7 @@ function BrowseFolder() {
   
   const [folderData, setFolderData] = useState<FolderData | null>(null);
   const [password, setPassword] = useState("");
+  const [validPassword, setValidPassword] = useState(""); // Сохраняем валидный пароль
   const [isLoading, setIsLoading] = useState(true);
   const [isPasswordRequired, setIsPasswordRequired] = useState(false);
   const [error, setError] = useState("");
@@ -86,6 +87,7 @@ function BrowseFolder() {
 
       const data = await response.json();
       setFolderData(data);
+      setValidPassword(password); // Сохраняем правильный пароль
       setIsPasswordRequired(false);
       setPassword("");
     } catch (err) {
@@ -99,8 +101,8 @@ function BrowseFolder() {
 
   const handleFileDownload = async (fileId: number, fileName: string) => {
     try {
-      const passwordToSend = folderData?.isPasswordProtected ? password : "";
-      console.log('Download file:', { fileId, passwordToSend, isPasswordProtected: folderData?.isPasswordProtected });
+      const passwordToSend = folderData?.isPasswordProtected ? validPassword : "";
+      console.log('Download file:', { fileId, passwordToSend, isPasswordProtected: folderData?.isPasswordProtected, validPassword });
       
       const response = await fetch(`/api/public/download-file/${token}/${fileId}`, {
         method: "POST",
