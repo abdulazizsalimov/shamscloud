@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { setupFiles } from "./files";
 import { setupSettings } from "./settings";
+import { setupPublicFiles } from "./public-files";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware
@@ -26,6 +27,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup system settings routes
   setupSettings(app, storage);
+  
+  // Setup public file sharing routes
+  setupPublicFiles(app, storage);
   
   // API health check endpoint
   app.get("/api/health", (req, res) => {
