@@ -79,11 +79,11 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
   app.get("/api/public/download/:token", async (req: Request, res: Response) => {
     try {
       const { token } = req.params;
-      console.log('Direct download request for token:', token);
+      console.log('GET Direct download request for token:', token);
       
       // Находим файл по токену
       const file = await storage.getFileByPublicToken(token);
-      console.log('File retrieved:', file ? `Found file: ${file.name}` : 'File not found');
+      console.log('GET File retrieved:', file ? `Found file: ${file.name}` : 'File not found');
       
       if (!file) {
         return res.status(404).json({ message: "File not found or not public" });
