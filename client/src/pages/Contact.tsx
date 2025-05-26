@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { usePageContent } from "@/hooks/usePageContent";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 export default function Contact() {
   const { t } = useLocale();
   const { toast } = useToast();
+  
+  // Применяем сохраненный контент к странице
+  usePageContent();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",

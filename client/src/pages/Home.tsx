@@ -5,11 +5,15 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Shield, Accessibility, Zap, Users } from "lucide-react";
 import { EditableContent } from "@/components/EditableContent";
+import { usePageContent } from "@/hooks/usePageContent";
 import { useState, useEffect } from "react";
 
 export default function Home() {
   const { t } = useLocale();
   const [isEditMode, setIsEditMode] = useState(false);
+  
+  // Применяем сохраненный контент к странице
+  usePageContent();
 
   useEffect(() => {
     // Проверяем параметр edit в URL

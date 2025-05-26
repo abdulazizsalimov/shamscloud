@@ -1,9 +1,13 @@
 import { useLocale } from "@/providers/LocaleProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { usePageContent } from "@/hooks/usePageContent";
 
 export default function About() {
   const { t } = useLocale();
+  
+  // Применяем сохраненный контент к странице
+  usePageContent();
   
   return (
     <div className="min-h-screen flex flex-col">
