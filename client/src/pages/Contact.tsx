@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocale } from "@/providers/LocaleProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Mail, Phone, MapPin } from "lucide-react";
 
 export default function Contact() {
   const { t } = useLocale();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isEditMode, setIsEditMode] = useState(false);
   
@@ -19,10 +21,21 @@ export default function Contact() {
   usePageContent();
 
   useEffect(() => {
-    // Проверяем параметр edit в URL
+    // Проверяем параметр edit в URL и права администратора
     const urlParams = new URLSearchParams(window.location.search);
-    setIsEditMode(urlParams.get('edit') === 'true');
-  }, []);
+    const editParam = urlParams.get('edit') === 'true';
+    const isAdmin = user?.role === 'admin';
+    
+    // Режим редактирования доступен только администраторам
+    setIsEditMode(editParam && isAdmin);
+    
+    // Если пользователь не админ, но пытается редактировать - убираем параметр из URL
+    if (editParam && !isAdmin) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('edit');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [user]);
 
   const handleSave = () => {
     console.log('Saving changes...');

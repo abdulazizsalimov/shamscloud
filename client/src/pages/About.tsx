@@ -1,4 +1,5 @@
 import { useLocale } from "@/providers/LocaleProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { usePageContent } from "@/hooks/usePageContent";
@@ -7,16 +8,28 @@ import { useState, useEffect } from "react";
 
 export default function About() {
   const { t } = useLocale();
+  const { user } = useAuth();
   const [isEditMode, setIsEditMode] = useState(false);
   
   // Применяем сохраненный контент к странице
   usePageContent();
 
   useEffect(() => {
-    // Проверяем параметр edit в URL
+    // Проверяем параметр edit в URL и права администратора
     const urlParams = new URLSearchParams(window.location.search);
-    setIsEditMode(urlParams.get('edit') === 'true');
-  }, []);
+    const editParam = urlParams.get('edit') === 'true';
+    const isAdmin = user?.role === 'admin';
+    
+    // Режим редактирования доступен только администраторам
+    setIsEditMode(editParam && isAdmin);
+    
+    // Если пользователь не админ, но пытается редактировать - убираем параметр из URL
+    if (editParam && !isAdmin) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('edit');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [user]);
 
   const handleSave = () => {
     console.log('Saving changes...');
