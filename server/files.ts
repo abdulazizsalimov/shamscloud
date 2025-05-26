@@ -460,53 +460,7 @@ export function setupFiles(app: Express, storageService: IStorage) {
     }
   });
 
-  // API для публичного доступа к файлам
-  
-  // Настройка публичного доступа к файлу
-  app.post("/api/files/:id/share", authGuard, async (req: Request, res: Response) => {
-    try {
-      const fileId = parseInt(req.params.id);
-      const userId = (req as any).user.id;
-      const { shareType, isPasswordProtected, password } = req.body;
-      
-      const file = await storageService.getFile(fileId);
-      
-      if (!file) {
-        return res.status(404).json({ message: "File not found" });
-      }
-      
-      if (file.userId !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      // Генерируем уникальный токен
-      const publicToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      
-      // Хешируем пароль, если защита паролем включена
-      let hashedPassword = null;
-      if (isPasswordProtected && password) {
-        hashedPassword = await bcryptjs.hash(password, 10);
-      }
-      
-      const updatedFile = await storageService.updateFile(fileId, {
-        isPublic: true,
-        publicToken,
-        shareType,
-        isPasswordProtected: isPasswordProtected || false,
-        sharePassword: hashedPassword
-      });
-      
-      res.json({ 
-        file: updatedFile, 
-        shareUrl: shareType === 'direct' 
-          ? `${req.protocol}://${req.get('host')}/api/public/download/${publicToken}`
-          : `${req.protocol}://${req.get('host')}/shared/${publicToken}`
-      });
-    } catch (error) {
-      console.error("Share file error:", error);
-      res.status(500).json({ message: "An error occurred while sharing file" });
-    }
-  });
+
 
   // Отключение публичного доступа
   app.delete("/api/files/:id/share", authGuard, async (req: Request, res: Response) => {
