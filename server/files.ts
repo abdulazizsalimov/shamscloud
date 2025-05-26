@@ -266,7 +266,8 @@ export function setupFiles(app: Express, storageService: IStorage) {
         available: userQuota - userUsedSpace
       });
       
-      if (userUsedSpace + totalUploadSize > userQuota) {
+      // Временно отключаем проверку квоты для администратора
+      if (user.role !== 'admin' && userUsedSpace + totalUploadSize > userQuota) {
         // Удаляем загруженные файлы
         for (const file of files) {
           await fs.unlink(file.path).catch(console.error);
