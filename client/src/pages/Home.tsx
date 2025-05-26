@@ -39,7 +39,7 @@ export default function Home() {
               </div>
               
               <div className="md:w-1/2">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 relative overflow-hidden" aria-hidden="true">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500"></div>
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center">
