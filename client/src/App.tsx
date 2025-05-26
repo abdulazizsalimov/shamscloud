@@ -17,6 +17,7 @@ import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
 import EmailVerification from "@/pages/EmailVerification";
 import SharedFile from "@/pages/SharedFile";
+import BrowseFolder from "@/pages/BrowseFolder";
 
 // Screen reader announcements element for accessibility
 const ScreenReaderAnnounce = () => (
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/verify-email" component={EmailVerification} />
       <Route path="/shared/:token" component={SharedFile} />
+      <Route path="/browse/:token" component={BrowseFolder} />
       <Route component={NotFound} />
     </Switch>
   );

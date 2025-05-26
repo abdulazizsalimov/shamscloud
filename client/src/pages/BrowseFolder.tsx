@@ -20,7 +20,7 @@ interface FolderData {
   isPasswordProtected: boolean;
 }
 
-export function BrowseFolder() {
+function BrowseFolder() {
   const { token } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -265,3 +265,5 @@ export function BrowseFolder() {
     </div>
   );
 }
+
+export default BrowseFolder;
