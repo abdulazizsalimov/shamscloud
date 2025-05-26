@@ -99,12 +99,15 @@ function BrowseFolder() {
 
   const handleFileDownload = async (fileId: number, fileName: string) => {
     try {
+      const passwordToSend = folderData?.isPasswordProtected ? password : "";
+      console.log('Download file:', { fileId, passwordToSend, isPasswordProtected: folderData?.isPasswordProtected });
+      
       const response = await fetch(`/api/public/download-file/${token}/${fileId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password: folderData?.isPasswordProtected ? password : "" }),
+        body: JSON.stringify({ password: passwordToSend }),
       });
 
       if (!response.ok) {

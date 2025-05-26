@@ -343,11 +343,20 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
 
       // Проверяем пароль папки
       if (folder.isPasswordProtected && folder.sharePassword) {
+        console.log('File download password check:', {
+          hasPassword: !!password,
+          isPasswordProtected: folder.isPasswordProtected,
+          hasStoredPassword: !!folder.sharePassword,
+          providedPassword: password
+        });
+        
         if (!password) {
           return res.status(400).json({ message: "Password required" });
         }
         
         const isPasswordValid = await bcrypt.compare(password, folder.sharePassword);
+        console.log('File download password validation result:', isPasswordValid);
+        
         if (!isPasswordValid) {
           return res.status(401).json({ message: "Invalid password" });
         }
