@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useLocale } from "@/providers/LocaleProvider";
 import { useAuth } from "@/providers/AuthProvider";
@@ -24,6 +24,49 @@ export function Header() {
   const { user, logout, isAdmin } = useAuth();
   const { togglePanel } = useAccessibility();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [availableLanguages, setAvailableLanguages] = useState(() => {
+    const stored = localStorage.getItem('availableLanguages');
+    if (!stored) {
+      const defaultLanguages = [
+        { code: 'ru', name: 'Русский', englishName: 'Russian' },
+        { code: 'en', name: 'English', englishName: 'English' }
+      ];
+      localStorage.setItem('availableLanguages', JSON.stringify(defaultLanguages));
+      return defaultLanguages;
+    }
+    return JSON.parse(stored);
+  });
+
+  // Обновляем список языков при изменениях в localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem('availableLanguages');
+      if (stored) {
+        setAvailableLanguages(JSON.parse(stored));
+      }
+    };
+
+    // Проверяем обновления каждую секунду (для случаев когда storage event не срабатывает)
+    const interval = setInterval(() => {
+      const stored = localStorage.getItem('availableLanguages');
+      if (stored) {
+        const newLanguages = JSON.parse(stored);
+        setAvailableLanguages(prev => {
+          // Проверяем, изменился ли список
+          if (JSON.stringify(prev) !== JSON.stringify(newLanguages)) {
+            return newLanguages;
+          }
+          return prev;
+        });
+      }
+    }, 1000);
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
   
   const isActive = (path: string) => location === path;
   
@@ -101,18 +144,15 @@ export function Header() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{t("common.selectLanguage")}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={() => setLocale('ru')}
-                    className={locale === 'ru' ? "bg-blue-50 dark:bg-blue-800 font-medium dark:text-white" : ""}
-                  >
-                    Русский
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => setLocale('en')}
-                    className={locale === 'en' ? "bg-blue-50 dark:bg-blue-800 font-medium dark:text-white" : ""}
-                  >
-                    English
-                  </DropdownMenuItem>
+                  {availableLanguages.map((language: any) => (
+                    <DropdownMenuItem 
+                      key={language.code}
+                      onClick={() => setLocale(language.code)}
+                      className={locale === language.code ? "bg-blue-50 dark:bg-blue-800 font-medium dark:text-white" : ""}
+                    >
+                      {language.name}
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
               

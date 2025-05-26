@@ -238,6 +238,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     const updatedLanguages = JSON.parse(localStorage.getItem('availableLanguages') || '[]');
     setAvailableLanguages(updatedLanguages);
     
+    // Принудительно обновляем список в других компонентах через событие
+    window.dispatchEvent(new Event('languagesUpdated'));
+    
     // Open translation editor for the new language
     setEditingLanguage(languageCode as "ru" | "en");
     setEditTranslationOpen(true);
@@ -369,49 +372,33 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   </div>
                   
                   <div className="space-y-3">
-                    {/* Russian Language */}
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white text-sm font-medium">
-                          RU
+                    {availableLanguages.map((language: any, index: number) => {
+                      const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'];
+                      const bgColor = colors[index % colors.length];
+                      
+                      return (
+                        <div key={language.code} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-6 h-6 rounded-full ${bgColor} flex items-center justify-center text-white text-sm font-medium`}>
+                              {language.code.toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-900 dark:text-white">{language.name}</div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">{language.englishName}</div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditTranslation(language.code as "ru" | "en")}
+                            aria-label={t("admin.editTranslation")}
+                            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Русский</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Russian</div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditTranslation("ru")}
-                        aria-label={t("admin.editTranslation")}
-                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    {/* English Language */}
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
-                          EN
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">English</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">English</div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditTranslation("en")}
-                        aria-label={t("admin.editTranslation")}
-                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
+                      );
+                    })}
                   </div>
                   
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
