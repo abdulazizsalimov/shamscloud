@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { File as FileType } from '@shared/schema';
 import { useLocale } from '@/providers/LocaleProvider';
 import { formatFileSize, formatDate } from '@/lib/utils';
+import { ShareModal } from './ShareModal';
 import { Folder, FileText, Image, FileIcon, FileSpreadsheet, MoreVertical, Download, Share, Edit, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -58,6 +59,8 @@ export function FileList({
   const [fileToRename, setFileToRename] = useState<FileType | null>(null);
   const [newFileName, setNewFileName] = useState('');
   const [fileToDelete, setFileToDelete] = useState<FileType | null>(null);
+  const [fileToShare, setFileToShare] = useState<FileType | null>(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   // Get file icon based on type
   const getFileIcon = (file: FileType) => {
@@ -107,13 +110,8 @@ export function FileList({
   };
 
   const handleShareFile = (file: FileType) => {
-    onFileShare(file);
-    // Copy the share link to clipboard (this would be a real link in a production app)
-    navigator.clipboard.writeText(`https://shamscloud.app/shared/${file.id}`);
-    toast({
-      title: t("common.success"),
-      description: t("notifications.shareSuccess"),
-    });
+    setFileToShare(file);
+    setShareModalOpen(true);
   };
 
   return (
