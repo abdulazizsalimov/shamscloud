@@ -78,8 +78,24 @@ export function Header() {
   ];
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-md fixed top-0 left-0 right-0 z-50">
-      <div className="container mx-auto px-4 py-3">
+    <>
+      {/* Skip Link для доступности */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-br-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        onClick={(e) => {
+          e.preventDefault();
+          // Ищем список файлов на странице просмотра папок
+          const filesList = document.querySelector('[role="listbox"]') || document.querySelector('#main-content');
+          if (filesList) {
+            (filesList as HTMLElement).focus();
+          }
+        }}
+      >
+        {t("accessibility.skipToContent")}
+      </a>
+      <header className="bg-white dark:bg-gray-800 shadow-md fixed top-0 left-0 right-0 z-50">
+        <div className="container mx-auto px-4 py-3">
         <div className="flex items-center">
           {/* Logo and Brand */}
           <div className="flex items-center mr-8">
@@ -209,10 +225,11 @@ export function Header() {
           </nav>
         </div>
       </div>
-      <AccessibilityPanel />
-      
-      {/* Settings Modal for Admin */}
-      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
-    </header>
+        <AccessibilityPanel />
+        
+        {/* Settings Modal for Admin */}
+        <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      </header>
+    </>
   );
 }
