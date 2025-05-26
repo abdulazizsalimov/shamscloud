@@ -54,12 +54,16 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
       }
 
       const data = await response.json();
-      setShareLink(data.shareLink || "");
+      console.log("Response data:", data); // Для отладки
+      
+      // Пробуем разные варианты поля с ссылкой
+      const link = data.shareLink || data.shareUrl || data.link || "";
+      setShareLink(link);
       setIsPublic(true);
       
       toast({
         title: "Файл опубликован",
-        description: "Ссылка для публичного доступа создана",
+        description: `Ссылка создана: ${link}`,
       });
     } catch (error) {
       toast({
