@@ -234,7 +234,12 @@ export const translations = {
       availableLanguages: "Доступные языки",
       addTranslation: "Добавить перевод",
       editTranslation: "Редактировать перевод",
-      multilingualDescription: "Управляйте переводами интерфейса для поддержки нескольких языков. Вы можете редактировать существующие переводы или добавить новые языки."
+      multilingualDescription: "Управляйте переводами интерфейса для поддержки нескольких языков. Вы можете редактировать существующие переводы или добавить новые языки.",
+      translationKey: "Ключ",
+      englishText: "Английский текст",
+      translatedText: "Перевод",
+      translationsSaved: "Переводы сохранены",
+      translationsSaveError: "Ошибка при сохранении переводов"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",
@@ -476,7 +481,12 @@ export const translations = {
       availableLanguages: "Available Languages",
       addTranslation: "Add Translation",
       editTranslation: "Edit Translation",
-      multilingualDescription: "Manage interface translations to support multiple languages. You can edit existing translations or add new languages."
+      multilingualDescription: "Manage interface translations to support multiple languages. You can edit existing translations or add new languages.",
+      translationKey: "Key",
+      englishText: "English Text",
+      translatedText: "Translation",
+      translationsSaved: "Translations Saved",
+      translationsSaveError: "Error saving translations"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",

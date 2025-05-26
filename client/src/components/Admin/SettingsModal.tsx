@@ -36,6 +36,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { Edit, Plus, Globe } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { TranslationEditModal } from "./TranslationEditModal";
 
 interface SettingsModalProps {
   open: boolean;
@@ -61,6 +62,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState("quota");
   const [availableSpace, setAvailableSpace] = useState<string>(""); // For storing actual available space
   const [isLoading, setIsLoading] = useState(false);
+  const [editTranslationOpen, setEditTranslationOpen] = useState(false);
+  const [editingLanguage, setEditingLanguage] = useState<"ru" | "en">("ru");
 
   // Initialize the form with quota settings
   const form = useForm<QuotaSettingsValues>({
@@ -202,6 +205,12 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   }
+
+  // Handle opening translation edit modal
+  const handleEditTranslation = (language: "ru" | "en") => {
+    setEditingLanguage(language);
+    setEditTranslationOpen(true);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -346,10 +355,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => {
-                          // TODO: Add functionality for editing Russian translation
-                          console.log("Edit Russian translation clicked");
-                        }}
+                        onClick={() => handleEditTranslation("ru")}
                         aria-label={t("admin.editTranslation")}
                         className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                       >
@@ -371,10 +377,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => {
-                          // TODO: Add functionality for editing English translation
-                          console.log("Edit English translation clicked");
-                        }}
+                        onClick={() => handleEditTranslation("en")}
                         aria-label={t("admin.editTranslation")}
                         className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                       >
@@ -394,6 +397,13 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           </Tabs>
         </div>
       </DialogContent>
+
+      {/* Translation Edit Modal */}
+      <TranslationEditModal
+        open={editTranslationOpen}
+        onOpenChange={setEditTranslationOpen}
+        language={editingLanguage}
+      />
     </Dialog>
   );
 }
