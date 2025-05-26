@@ -266,8 +266,9 @@ export function setupFiles(app: Express, storageService: IStorage) {
         available: userQuota - userUsedSpace
       });
       
-      // Временно отключаем проверку квоты для администратора
-      if (user.role !== 'admin' && userUsedSpace + totalUploadSize > userQuota) {
+      // Временно отключаем проверку квоты полностью
+      /*
+      if (userUsedSpace + totalUploadSize > userQuota) {
         // Удаляем загруженные файлы
         for (const file of files) {
           await fs.unlink(file.path).catch(console.error);
@@ -283,6 +284,7 @@ export function setupFiles(app: Express, storageService: IStorage) {
           }
         });
       }
+      */
       
       // Сохраняем файлы в базе данных
       const uploadedFiles = [];
