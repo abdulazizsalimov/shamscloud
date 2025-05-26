@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Copy, Eye, Download, Lock, Globe } from "lucide-react";
+import { Copy, Eye, Download, Lock, Globe, Folder, FolderOpen, Archive } from "lucide-react";
 
 interface ShareModalProps {
   file: File | null;
@@ -25,12 +25,12 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
   const { t } = useLocale();
   const { toast } = useToast();
   
-  const [shareType, setShareType] = useState<"direct" | "page">("page");
+  const [shareType, setShareType] = useState<"direct" | "page" | "browse">("browse");
   const [isPasswordProtected, setIsPasswordProtected] = useState(false);
   const [password, setPassword] = useState("");
 
   // Автоматически отключаем защиту паролем при выборе прямой ссылки
-  const handleShareTypeChange = (value: "direct" | "page") => {
+  const handleShareTypeChange = (value: "direct" | "page" | "browse") => {
     setShareType(value);
     if (value === "direct") {
       setIsPasswordProtected(false);
@@ -122,8 +122,8 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Поделиться файлом: {file.name}
+            {file.isFolder ? <Folder className="h-5 w-5" /> : <Globe className="h-5 w-5" />}
+            {file.isFolder ? `Поделиться папкой: ${file.name}` : `Поделиться файлом: ${file.name}`}
           </DialogTitle>
         </DialogHeader>
 
@@ -133,20 +133,48 @@ export function ShareModal({ file, open, onOpenChange }: ShareModalProps) {
               <div className="space-y-3">
                 <Label>Тип ссылки</Label>
                 <RadioGroup value={shareType} onValueChange={handleShareTypeChange}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="page" id="page" />
-                    <Label htmlFor="page" className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      Страница просмотра (рекомендуется)
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="direct" id="direct" />
-                    <Label htmlFor="direct" className="flex items-center gap-2">
-                      <Download className="h-4 w-4" />
-                      Прямая ссылка на скачивание
-                    </Label>
-                  </div>
+                  {file.isFolder ? (
+                    <>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="browse" id="browse" />
+                        <Label htmlFor="browse" className="flex items-center gap-2">
+                          <FolderOpen className="h-4 w-4" />
+                          Открыть доступ к папке для просмотра и загрузки (рекомендуется)
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="page" id="page" />
+                        <Label htmlFor="page" className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          Ссылка на страницу просмотра (.zip архив)
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="direct" id="direct" />
+                        <Label htmlFor="direct" className="flex items-center gap-2">
+                          <Archive className="h-4 w-4" />
+                          Прямая ссылка на .zip архив
+                        </Label>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="page" id="page" />
+                        <Label htmlFor="page" className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          Страница просмотра (рекомендуется)
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="direct" id="direct" />
+                        <Label htmlFor="direct" className="flex items-center gap-2">
+                          <Download className="h-4 w-4" />
+                          Прямая ссылка на скачивание
+                        </Label>
+                      </div>
+                    </>
+                  )}
                 </RadioGroup>
               </div>
 

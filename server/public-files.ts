@@ -7,7 +7,7 @@ import path from "path";
 import fs from "fs";
 
 const shareSettingsSchema = z.object({
-  shareType: z.enum(["direct", "page"]),
+  shareType: z.enum(["direct", "page", "browse"]),
   isPasswordProtected: z.boolean(),
   password: z.string().nullable().optional(),
 });
@@ -57,9 +57,15 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
 
       // Формируем ссылку для пользователя
       const baseUrl = req.protocol + "://" + req.get("host");
-      const shareLink = body.shareType === "direct" 
-        ? `${baseUrl}/api/public/download/${publicToken}`
-        : `${baseUrl}/shared/${publicToken}`;
+      let shareLink;
+      
+      if (body.shareType === "direct") {
+        shareLink = `${baseUrl}/api/public/download/${publicToken}`;
+      } else if (body.shareType === "browse") {
+        shareLink = `${baseUrl}/browse/${publicToken}`;
+      } else {
+        shareLink = `${baseUrl}/shared/${publicToken}`;
+      }
 
       res.json({
         success: true,
