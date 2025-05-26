@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { translations } from "@/i18n/translations";
 
 interface AddLanguageModalProps {
   open: boolean;
@@ -83,6 +84,15 @@ export function AddLanguageModal({ open, onOpenChange, onLanguageAdded }: AddLan
         name: values.nativeName,
         englishName: values.englishName
       });
+      
+      // Создаем структуру переводов для нового языка, копируя русские переводы как шаблон
+      const newLanguageTranslations = JSON.parse(JSON.stringify(translations.ru));
+      
+      // Добавляем новый язык в объект переводов
+      (translations as any)[values.languageCode] = newLanguageTranslations;
+      
+      // Сохраняем переводы нового языка в localStorage
+      localStorage.setItem(`translations_${values.languageCode}`, JSON.stringify(newLanguageTranslations));
       
       // Сохраняем обновленный список
       localStorage.setItem('availableLanguages', JSON.stringify(availableLanguages));

@@ -95,16 +95,36 @@ export function TranslationEditModal({ open, onOpenChange, language }: Translati
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // TODO: Здесь будет API вызов для сохранения переводов
-      console.log("Saving translations:", editedTranslations);
+      // Обновляем переводы в основном объекте translations
+      for (const [key, value] of Object.entries(editedTranslations)) {
+        const keys = key.split('.');
+        let current: any = (translations as any)[language];
+        
+        // Создаем путь к значению если его нет
+        for (let i = 0; i < keys.length - 1; i++) {
+          if (!current[keys[i]]) {
+            current[keys[i]] = {};
+          }
+          current = current[keys[i]];
+        }
+        
+        // Устанавливаем значение
+        current[keys[keys.length - 1]] = value;
+      }
+      
+      // Сохраняем в localStorage для персистентности
+      localStorage.setItem(`translations_${language}`, JSON.stringify((translations as any)[language]));
       
       // Имитация задержки сохранения
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
         title: t("admin.settingsSaved"),
         description: `${t("admin.translationsSaved")} (${language.toUpperCase()})`,
       });
+      
+      // Очищаем отредактированные переводы
+      setEditedTranslations({});
       
       onOpenChange(false);
     } catch (error) {
