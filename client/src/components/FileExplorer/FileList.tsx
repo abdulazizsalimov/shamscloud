@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { File as FileType } from '@shared/schema';
 import { useLocale } from '@/providers/LocaleProvider';
 import { formatFileSize, formatDate } from '@/lib/utils';
@@ -62,6 +62,104 @@ export function FileList({
   const [fileToShare, setFileToShare] = useState<FileType | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
+  // Состояния для клавиатурной навигации
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [ariaAnnouncement, setAriaAnnouncement] = useState('');
+  const fileListRef = useRef<HTMLDivElement>(null);
+  const fileRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Обновление массива refs при изменении списка файлов
+  useEffect(() => {
+    fileRefs.current = fileRefs.current.slice(0, files.length);
+  }, [files.length]);
+
+  // Сброс фокуса при изменении текущего пути
+  useEffect(() => {
+    setFocusedIndex(-1);
+  }, [currentPath]);
+
+  // Функция для объявления элемента через ARIA
+  const announceItem = useCallback((file: FileType, action?: string) => {
+    const itemType = file.isFolder ? t("dashboard.folder") : t("dashboard.file");
+    const message = action 
+      ? `${action} ${itemType}: ${file.name}`
+      : `${itemType}: ${file.name}`;
+    
+    setAriaAnnouncement(message);
+    
+    // Очищаем объявление через короткое время
+    setTimeout(() => setAriaAnnouncement(''), 1000);
+  }, [t]);
+
+  // Обработка клавиатурной навигации
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (files.length === 0) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        setFocusedIndex(prev => {
+          const newIndex = prev < files.length - 1 ? prev + 1 : 0;
+          const file = files[newIndex];
+          if (file) {
+            announceItem(file);
+            // Устанавливаем фокус на элемент
+            setTimeout(() => {
+              const element = fileRefs.current[newIndex];
+              if (element) {
+                element.focus();
+              }
+            }, 0);
+          }
+          return newIndex;
+        });
+        break;
+
+      case 'ArrowUp':
+        event.preventDefault();
+        setFocusedIndex(prev => {
+          const newIndex = prev > 0 ? prev - 1 : files.length - 1;
+          const file = files[newIndex];
+          if (file) {
+            announceItem(file);
+            // Устанавливаем фокус на элемент
+            setTimeout(() => {
+              const element = fileRefs.current[newIndex];
+              if (element) {
+                element.focus();
+              }
+            }, 0);
+          }
+          return newIndex;
+        });
+        break;
+
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        if (focusedIndex >= 0 && focusedIndex < files.length) {
+          const file = files[focusedIndex];
+          if (file.isFolder) {
+            announceItem(file, t("accessibility.opening"));
+            onFolderClick(file.id);
+          } else {
+            announceItem(file, t("accessibility.downloading"));
+            onFileDownload(file);
+          }
+        }
+        break;
+    }
+  }, [files, focusedIndex, onFolderClick, onFileDownload, announceItem, t]);
+
+  // Добавление/удаление обработчика клавиш
+  useEffect(() => {
+    if (fileListRef.current) {
+      const element = fileListRef.current;
+      element.addEventListener('keydown', handleKeyDown);
+      return () => element.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [handleKeyDown]);
+
   // Get file icon based on type
   const getFileIcon = (file: FileType) => {
     if (file.isFolder) return <Folder className="text-yellow-500" />;
@@ -115,133 +213,153 @@ export function FileList({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-700 rounded-lg shadow overflow-hidden">
-      {/* Table Header */}
-      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 font-medium">
-        <div className="w-12"></div> {/* Icon column */}
-        <div className="flex-grow">{t("dashboard.fileName")}</div>
-        <div className="w-32 text-right hidden md:block">{t("dashboard.fileSize")}</div>
-        <div className="w-48 text-right hidden md:block">{t("dashboard.modified")}</div>
-        <div className="w-20"></div> {/* Actions column */}
+    <>
+      {/* ARIA Live Region для объявлений */}
+      <div 
+        className="sr-only" 
+        aria-live="polite" 
+        aria-atomic="true"
+        role="status"
+      >
+        {ariaAnnouncement}
+      </div>
+      
+      <div 
+        ref={fileListRef}
+        className="bg-white dark:bg-gray-700 rounded-lg shadow overflow-hidden"
+        role="listbox"
+        aria-label={t("dashboard.filesList")}
+        tabIndex={0}
+      >
+        {/* Table Header */}
+        <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 font-medium">
+          <div className="w-12"></div> {/* Icon column */}
+          <div className="flex-grow">{t("dashboard.fileName")}</div>
+          <div className="w-32 text-right hidden md:block">{t("dashboard.fileSize")}</div>
+          <div className="w-48 text-right hidden md:block">{t("dashboard.modified")}</div>
+          <div className="w-20"></div> {/* Actions column */}
+        </div>
+
+        {/* File List */}
+        {files.length === 0 ? (
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+            {currentPath === null
+              ? t("notifications.emptyStorage")
+              : t("dashboard.emptyFolder")}
+          </div>
+        ) : (
+          files.map((file, index) => (
+            <div 
+              key={file.id}
+              ref={el => fileRefs.current[index] = el}
+              className={`flex items-center p-4 border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 ${
+                focusedIndex === index ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500' : ''
+              }`}
+              role="option"
+              aria-selected={focusedIndex === index}
+              tabIndex={-1}
+            >
+              <div className="w-12">
+                {getFileIcon(file)}
+              </div>
+              <div 
+                className="flex-grow cursor-pointer"
+                onClick={() => file.isFolder && onFolderClick(file.id)}
+              >
+                <span className="font-medium">{file.name}</span>
+              </div>
+              <div className="w-32 text-right text-gray-500 hidden md:block">
+                {file.isFolder 
+                  ? t("dashboard.folder") 
+                  : formatFileSize(file.size)
+                }
+              </div>
+              <div className="w-48 text-right text-gray-500 hidden md:block">
+                {formatDate(new Date(file.updatedAt))}
+              </div>
+              <div className="w-20 text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      aria-label={t("dashboard.actions")}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{t("dashboard.actions")}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {!file.isFolder && (
+                      <DropdownMenuItem onClick={() => onFileDownload(file)}>
+                        <Download className="mr-2 h-4 w-4" />
+                        {t("dashboard.download")}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => handleShareFile(file)}>
+                      <Share className="mr-2 h-4 w-4" />
+                      {t("dashboard.share")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleRenameClick(file)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      {t("dashboard.rename")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => handleDeleteClick(file)}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {t("common.delete")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
-      {/* File List */}
-      {files.length === 0 ? (
-        <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-          {currentPath === null
-            ? t("notifications.emptyStorage")
-            : t("dashboard.emptyFolder")}
-        </div>
-      ) : (
-        files.map((file) => (
-          <div 
-            key={file.id}
-            className="flex items-center p-4 border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
-          >
-            <div className="w-12">
-              {getFileIcon(file)}
-            </div>
-            <div 
-              className="flex-grow cursor-pointer"
-              onClick={() => file.isFolder && onFolderClick(file.id)}
-            >
-              <span className="font-medium">{file.name}</span>
-            </div>
-            <div className="w-32 text-right text-gray-500 hidden md:block">
-              {file.isFolder 
-                ? t("dashboard.folder") 
-                : formatFileSize(file.size)
-              }
-            </div>
-            <div className="w-48 text-right text-gray-500 hidden md:block">
-              {formatDate(new Date(file.updatedAt))}
-            </div>
-            <div className="w-20 text-right">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    aria-label={t("dashboard.actions")}
-                  >
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>{file.name}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {!file.isFolder && (
-                    <DropdownMenuItem onClick={() => onFileDownload(file as FileType)}>
-                      <Download className="mr-2 h-4 w-4" />
-                      <span>{t("common.download")}</span>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={() => handleShareFile(file as FileType)}>
-                    <Share className="mr-2 h-4 w-4" />
-                    <span>{t("common.share")}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleRenameClick(file as FileType)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    <span>{t("common.rename")}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={() => handleDeleteClick(file as FileType)}
-                    className="text-red-500 focus:text-red-500"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>{t("common.delete")}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        ))
-      )}
-
       {/* Rename Dialog */}
-      <Dialog open={fileToRename !== null} onOpenChange={(open) => !open && setFileToRename(null)}>
+      <Dialog open={!!fileToRename} onOpenChange={() => setFileToRename(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("common.rename")}</DialogTitle>
+            <DialogTitle>{t("dashboard.renameFile")}</DialogTitle>
             <DialogDescription>
-              {t("dashboard.enterNewName")} {fileToRename?.name}
+              {t("dashboard.enterNewName")}
             </DialogDescription>
           </DialogHeader>
           <Input
             value={newFileName}
             onChange={(e) => setNewFileName(e.target.value)}
-            placeholder={t("common.newName")}
+            placeholder={t("dashboard.fileName")}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setFileToRename(null)}>
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleRenameSubmit}>{t("common.save")}</Button>
+            <Button onClick={handleRenameSubmit}>
+              {t("dashboard.rename")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog 
-        open={fileToDelete !== null} 
-        onOpenChange={(open) => !open && setFileToDelete(null)}
-      >
+      <AlertDialog open={!!fileToDelete} onOpenChange={() => setFileToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("common.confirmDelete")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("dashboard.deleteFile")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {fileToDelete?.isFolder
-                ? `${t("common.areYouSure")} "${fileToDelete?.name}"? ${t("common.thisActionCannotBeUndone")}`
-                : `${t("common.areYouSure")} "${fileToDelete?.name}"? ${t("common.thisActionCannotBeUndone")}`}
+              {t("dashboard.deleteConfirmation", { fileName: fileToDelete?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteConfirm}
-              className="bg-red-500 hover:bg-red-600"
-            >
+            <AlertDialogCancel onClick={() => setFileToDelete(null)}>
+              {t("common.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
               {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -254,6 +372,6 @@ export function FileList({
         open={shareModalOpen}
         onOpenChange={setShareModalOpen}
       />
-    </div>
+    </>
   );
 }
