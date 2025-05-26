@@ -18,13 +18,26 @@ export default function About() {
     // Проверяем параметр edit в URL и права администратора
     const urlParams = new URLSearchParams(window.location.search);
     const editParam = urlParams.get('edit') === 'true';
+    
+    // Если нет параметра edit, режим редактирования выключен
+    if (!editParam) {
+      setIsEditMode(false);
+      return;
+    }
+    
+    // Если пользователь еще загружается, ждем
+    if (user === undefined) {
+      return;
+    }
+    
     const isAdmin = user?.role === 'admin';
     
     // Режим редактирования доступен только администраторам
-    setIsEditMode(editParam && isAdmin);
-    
-    // Если пользователь не админ, но пытается редактировать - убираем параметр из URL
-    if (editParam && !isAdmin) {
+    if (isAdmin) {
+      setIsEditMode(true);
+    } else {
+      // Если пользователь не админ, убираем параметр из URL
+      setIsEditMode(false);
       const url = new URL(window.location.href);
       url.searchParams.delete('edit');
       window.history.replaceState({}, '', url.toString());
