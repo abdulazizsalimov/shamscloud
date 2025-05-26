@@ -331,6 +331,7 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
 
   // Получение содержимого вложенной папки для browsing
   app.post("/api/public/browse/:token/:folderId", async (req: Request, res: Response) => {
+    console.log('*** SUBFOLDER ENDPOINT HIT ***', req.params, req.body);
     try {
       const { token, folderId } = req.params;
       const { password } = req.body;
