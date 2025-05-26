@@ -73,11 +73,6 @@ export function FileList({
     fileRefs.current = fileRefs.current.slice(0, files.length);
   }, [files.length]);
 
-  // Сброс фокуса при изменении текущего пути
-  useEffect(() => {
-    setFocusedIndex(-1);
-  }, [currentPath]);
-
   // Функция для объявления элемента через ARIA
   const announceItem = useCallback((file: FileType, action?: string) => {
     const itemType = file.isFolder ? "папка" : "файл";
@@ -90,6 +85,26 @@ export function FileList({
     // Очищаем объявление через короткое время
     setTimeout(() => setAriaAnnouncement(''), 1000);
   }, []);
+
+  // Сброс фокуса при изменении текущего пути и автофокус на списке файлов
+  useEffect(() => {
+    setFocusedIndex(-1);
+    // Устанавливаем фокус на контейнер списка файлов после перехода в папку
+    setTimeout(() => {
+      if (fileListRef.current && files.length > 0) {
+        fileListRef.current.focus();
+        setFocusedIndex(0); // Устанавливаем фокус на первый элемент
+        
+        // Объявляем первый элемент
+        const firstFile = files[0];
+        if (firstFile) {
+          const itemType = firstFile.isFolder ? "папка" : "файл";
+          setAriaAnnouncement(`${itemType}: ${firstFile.name}`);
+          setTimeout(() => setAriaAnnouncement(''), 1000);
+        }
+      }
+    }, 100);
+  }, [currentPath, files]);
 
   // Функция для объявления границ списка
   const announceBoundary = useCallback((isFirst: boolean) => {
@@ -164,16 +179,25 @@ export function FileList({
         if (focusedIndex >= 0 && focusedIndex < files.length) {
           const file = files[focusedIndex];
           if (file.isFolder) {
-            announceItem(file, t("accessibility.opening"));
+            announceItem(file, "Папка открывается");
             onFolderClick(file.id);
           } else {
-            announceItem(file, t("accessibility.downloading"));
+            announceItem(file, "Файл скачивается");
             onFileDownload(file);
           }
         }
         break;
+
+      case 'Backspace':
+        event.preventDefault();
+        // Возврат к родительской папке
+        if (currentPath !== null) {
+          setAriaAnnouncement("Возврат к родительской папке");
+          onFolderClick(null); // Переход к корневой папке или родительской
+        }
+        break;
     }
-  }, [files, focusedIndex, onFolderClick, onFileDownload, announceItem, announceBoundary, t]);
+  }, [files, focusedIndex, onFolderClick, onFileDownload, announceItem, announceBoundary, currentPath]);
 
   // Добавление/удаление обработчика клавиш
   useEffect(() => {
