@@ -163,7 +163,15 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
           return res.status(401).json({ message: "Password required" });
         }
         
+        console.log('Password check:', {
+          providedPassword: password,
+          hasStoredPassword: !!file.sharePassword,
+          storedPasswordLength: file.sharePassword?.length
+        });
+        
         const isPasswordValid = await bcrypt.compare(password, file.sharePassword);
+        console.log('Password validation result:', isPasswordValid);
+        
         if (!isPasswordValid) {
           return res.status(401).json({ message: "Invalid password" });
         }
