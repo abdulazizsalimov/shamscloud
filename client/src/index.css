@@ -201,6 +201,57 @@ header button[data-variant="ghost"] {
 }
 
 header button[data-variant="ghost"]:hover {
+  background-color: hsl(0 0% 95%);
+  border-color: hsl(0 0% 70%);
+}
+
+/* Улучшение контрастности для кнопок в светлой теме */
+button:not(.dark button) {
+  color: hsl(0 0% 10%) !important;
+}
+
+button[data-variant="outline"]:not(.dark button[data-variant="outline"]) {
+  background-color: white;
+  border: 1px solid hsl(0 0% 80%);
+  color: hsl(0 0% 10%) !important;
+}
+
+button[data-variant="outline"]:hover:not(.dark button[data-variant="outline"]:hover) {
+  background-color: hsl(0 0% 95%);
+  border-color: hsl(0 0% 70%);
+}
+
+button[data-variant="ghost"]:not(.dark button[data-variant="ghost"]) {
+  background-color: transparent;
+  color: hsl(0 0% 20%) !important;
+}
+
+button[data-variant="ghost"]:hover:not(.dark button[data-variant="ghost"]:hover) {
+  background-color: hsl(0 0% 95%);
+}
+
+/* Иконки в светлой теме */
+:not(.dark) button svg,
+:not(.dark) .icon {
+  color: hsl(0 0% 20%);
+}
+
+/* Выпадающие меню в светлой теме */
+:not(.dark) [data-radix-popper-content-wrapper] {
+  background-color: white;
+  border: 1px solid hsl(0 0% 85%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+:not(.dark) [role="menuitem"] {
+  color: hsl(0 0% 10%);
+}
+
+:not(.dark) [role="menuitem"]:hover {
+  background-color: hsl(0 0% 95%);
+}
+
+header button[data-variant="ghost"]:hover {
   background-color: hsla(0, 0%, 90%, 0.8); /* Light background on hover */
   border-color: hsl(0 0% 60%);
 }
