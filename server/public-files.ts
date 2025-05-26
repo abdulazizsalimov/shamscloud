@@ -246,6 +246,7 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
   app.get("/api/public/browse/:token", async (req: Request, res: Response) => {
     try {
       const { token } = req.params;
+      console.log('Browse folder API endpoint hit with token:', token);
       
       const file = await storage.getFileByPublicToken(token);
       if (!file || !file.isPublic || file.shareType !== "browse" || !file.isFolder) {
@@ -358,7 +359,7 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
         return res.status(403).json({ message: "File not accessible" });
       }
 
-      const filePath = path.join(process.cwd(), file.path);
+      const filePath = path.join(process.cwd(), 'uploads', file.path);
       
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: "File not found on disk" });
