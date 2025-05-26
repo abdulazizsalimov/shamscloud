@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,10 +36,75 @@ function BrowseFolder() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPasswordRequired, setIsPasswordRequired] = useState(false);
   const [error, setError] = useState("");
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     loadFolderData();
   }, [token]);
+
+  // Устанавливаем фокус на первый элемент при загрузке данных
+  useEffect(() => {
+    if (folderData?.files && folderData.files.length > 0) {
+      setFocusedIndex(0);
+      itemRefs.current = itemRefs.current.slice(0, folderData.files.length);
+      // Фокусируем первый элемент
+      setTimeout(() => {
+        if (itemRefs.current[0]) {
+          itemRefs.current[0].focus();
+        }
+      }, 100);
+    }
+  }, [folderData]);
+
+  // Обработчик клавиатурной навигации
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (!folderData?.files || folderData.files.length === 0) return;
+
+    const totalItems = folderData.files.length;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        if (focusedIndex < totalItems - 1) {
+          const newIndex = focusedIndex + 1;
+          setFocusedIndex(newIndex);
+          itemRefs.current[newIndex]?.focus();
+        } else {
+          // Озвучиваем, что это последний элемент
+          const announcement = `Это последний элемент списка. ${folderData.files[focusedIndex].name}`;
+          const msg = new SpeechSynthesisUtterance(announcement);
+          window.speechSynthesis.speak(msg);
+        }
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        if (focusedIndex > 0) {
+          const newIndex = focusedIndex - 1;
+          setFocusedIndex(newIndex);
+          itemRefs.current[newIndex]?.focus();
+        } else {
+          // Озвучиваем, что это первый элемент
+          const announcement = `Это первый элемент списка. ${folderData.files[focusedIndex].name}`;
+          const msg = new SpeechSynthesisUtterance(announcement);
+          window.speechSynthesis.speak(msg);
+        }
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        const currentFile = folderData.files[focusedIndex];
+        if (currentFile) {
+          if (currentFile.isFolder) {
+            navigateToFolder(currentFile.id);
+          } else {
+            handleFileDownload(currentFile.id, currentFile.name);
+          }
+        }
+        break;
+    }
+  }, [focusedIndex, folderData]);
 
   const loadFolderData = async () => {
     try {
@@ -279,6 +344,8 @@ function BrowseFolder() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handlePasswordSubmit()}
+                  autoFocus
+                  aria-label="Введите пароль для доступа к папке"
                 />
                 <Button onClick={handlePasswordSubmit} className="w-full">
                   Открыть папку
@@ -312,17 +379,32 @@ function BrowseFolder() {
               )}
             </div>
             <p className="text-gray-600 dark:text-gray-300">
-              Нажмите на файл, чтобы скачать его, или на папку, чтобы открыть её
+              Нажмите на файл, чтобы скачать его, или на папку, чтобы открыть её. 
+              Используйте стрелки вверх/вниз для навигации, Enter или пробел для активации.
             </p>
           </CardHeader>
           <CardContent>
             {folderData?.files && folderData.files.length > 0 ? (
-              <div className="space-y-2">
-                {folderData.files.map((file) => (
+              <div 
+                className="space-y-2" 
+                ref={containerRef}
+                onKeyDown={handleKeyDown}
+                role="listbox"
+                aria-label="Список файлов и папок"
+              >
+                {folderData.files.map((file, index) => (
                   <div
                     key={file.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                    ref={(el) => (itemRefs.current[index] = el)}
+                    className={`flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-blue-50 dark:focus:bg-blue-900 ${
+                      focusedIndex === index ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900' : ''
+                    }`}
                     onClick={() => file.isFolder ? navigateToFolder(file.id) : handleFileDownload(file.id, file.name)}
+                    onFocus={() => setFocusedIndex(index)}
+                    tabIndex={0}
+                    role="option"
+                    aria-selected={focusedIndex === index}
+                    aria-label={`${file.isFolder ? 'Папка' : 'Файл'}: ${file.name}${!file.isFolder ? `, размер: ${formatFileSize(file.size)}` : ''}`}
                   >
                     <div className="flex items-center gap-3">
                       {file.isFolder ? (
