@@ -80,10 +80,22 @@ export function FileList({
 
   // Функция для объявления элемента через ARIA
   const announceItem = useCallback((file: FileType, action?: string) => {
-    const itemType = file.isFolder ? t("dashboard.folder") : t("dashboard.file");
+    const itemType = file.isFolder ? t("dashboard.folder") : t("common.file");
     const message = action 
       ? `${action} ${itemType}: ${file.name}`
       : `${itemType}: ${file.name}`;
+    
+    setAriaAnnouncement(message);
+    
+    // Очищаем объявление через короткое время
+    setTimeout(() => setAriaAnnouncement(''), 1000);
+  }, [t]);
+
+  // Функция для объявления границ списка
+  const announceBoundary = useCallback((isFirst: boolean) => {
+    const message = isFirst 
+      ? t("accessibility.firstItem")
+      : t("accessibility.lastItem");
     
     setAriaAnnouncement(message);
     
@@ -99,7 +111,13 @@ export function FileList({
       case 'ArrowDown':
         event.preventDefault();
         setFocusedIndex(prev => {
-          const newIndex = prev < files.length - 1 ? prev + 1 : 0;
+          // Если мы на последнем элементе, не двигаемся дальше
+          if (prev >= files.length - 1) {
+            announceBoundary(false); // Сообщаем о последнем элементе
+            return prev;
+          }
+          
+          const newIndex = prev + 1;
           const file = files[newIndex];
           if (file) {
             announceItem(file);
@@ -118,7 +136,13 @@ export function FileList({
       case 'ArrowUp':
         event.preventDefault();
         setFocusedIndex(prev => {
-          const newIndex = prev > 0 ? prev - 1 : files.length - 1;
+          // Если мы на первом элементе, не двигаемся дальше
+          if (prev <= 0) {
+            announceBoundary(true); // Сообщаем о первом элементе
+            return prev;
+          }
+          
+          const newIndex = prev - 1;
           const file = files[newIndex];
           if (file) {
             announceItem(file);
@@ -149,7 +173,7 @@ export function FileList({
         }
         break;
     }
-  }, [files, focusedIndex, onFolderClick, onFileDownload, announceItem, t]);
+  }, [files, focusedIndex, onFolderClick, onFileDownload, announceItem, announceBoundary, t]);
 
   // Добавление/удаление обработчика клавиш
   useEffect(() => {
