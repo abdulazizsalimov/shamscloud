@@ -39,7 +39,8 @@ export const translations = {
       viewDetails: "Посмотреть детали",
       moreOptions: "Дополнительные опции",
       saving: "Сохранение...",
-      saveChanges: "Сохранить изменения"
+      saveChanges: "Сохранить изменения",
+      adding: "Добавление..."
     },
     notifications: {
       uploadSuccess: "Файлы успешно загружены",
@@ -239,7 +240,18 @@ export const translations = {
       englishText: "Английский текст",
       translatedText: "Перевод",
       translationsSaved: "Переводы сохранены",
-      translationsSaveError: "Ошибка при сохранении переводов"
+      translationsSaveError: "Ошибка при сохранении переводов",
+      addNewLanguage: "Добавить новый язык",
+      languageCode: "Код языка",
+      languageCodeDescription: "Двухбуквенный ISO код языка (например: ru, en, fr)",
+      nativeLanguageName: "Название языка",
+      nativeLanguageNameDescription: "Название языка на самом языке",
+      englishLanguageName: "Название на английском",
+      englishLanguageNameDescription: "Название языка на английском языке",
+      addLanguage: "Добавить язык",
+      languageAdded: "Язык добавлен",
+      languageAddedSuccess: "Новый язык успешно добавлен",
+      languageAddError: "Ошибка при добавлении языка"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",
@@ -286,7 +298,8 @@ export const translations = {
       viewDetails: "View Details",
       moreOptions: "More Options",
       saving: "Saving...",
-      saveChanges: "Save Changes"
+      saveChanges: "Save Changes",
+      adding: "Adding..."
     },
     notifications: {
       uploadSuccess: "Files uploaded successfully",
@@ -486,7 +499,18 @@ export const translations = {
       englishText: "English Text",
       translatedText: "Translation",
       translationsSaved: "Translations Saved",
-      translationsSaveError: "Error saving translations"
+      translationsSaveError: "Error saving translations",
+      addNewLanguage: "Add New Language",
+      languageCode: "Language Code",
+      languageCodeDescription: "Two-letter ISO language code (e.g.: ru, en, fr)",
+      nativeLanguageName: "Language Name",
+      nativeLanguageNameDescription: "Language name in its native script",
+      englishLanguageName: "English Name",
+      englishLanguageNameDescription: "Language name in English",
+      addLanguage: "Add Language",
+      languageAdded: "Language Added",
+      languageAddedSuccess: "New language has been successfully added",
+      languageAddError: "Error adding language"
     },
     footer: {
       copyright: "© 2023 ShamsCloud. All rights reserved.",

@@ -37,6 +37,7 @@ import { toast } from "@/hooks/use-toast";
 import { Edit, Plus, Globe } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { TranslationEditModal } from "./TranslationEditModal";
+import { AddLanguageModal } from "./AddLanguageModal";
 
 interface SettingsModalProps {
   open: boolean;
@@ -64,6 +65,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [editTranslationOpen, setEditTranslationOpen] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<"ru" | "en">("ru");
+  const [addLanguageOpen, setAddLanguageOpen] = useState(false);
 
   // Initialize the form with quota settings
   const form = useForm<QuotaSettingsValues>({
@@ -212,6 +214,18 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     setEditTranslationOpen(true);
   };
 
+  // Handle adding new language
+  const handleAddTranslation = () => {
+    setAddLanguageOpen(true);
+  };
+
+  // Handle when new language is added
+  const handleLanguageAdded = (languageCode: string) => {
+    // Open translation editor for the new language
+    setEditingLanguage(languageCode as "ru" | "en");
+    setEditTranslationOpen(true);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -329,10 +343,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t("admin.availableLanguages")}</h3>
                     <Button 
-                      onClick={() => {
-                        // TODO: Add functionality for adding new translation
-                        console.log("Add translation clicked");
-                      }}
+                      onClick={handleAddTranslation}
                       className="bg-primary hover:bg-primary/90 text-white"
                     >
                       <Plus className="h-4 w-4 mr-2" />
@@ -403,6 +414,13 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         open={editTranslationOpen}
         onOpenChange={setEditTranslationOpen}
         language={editingLanguage}
+      />
+
+      {/* Add Language Modal */}
+      <AddLanguageModal
+        open={addLanguageOpen}
+        onOpenChange={setAddLanguageOpen}
+        onLanguageAdded={handleLanguageAdded}
       />
     </Dialog>
   );
