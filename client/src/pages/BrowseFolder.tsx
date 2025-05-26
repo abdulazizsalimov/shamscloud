@@ -103,7 +103,7 @@ function BrowseFolder() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password: folderData?.isPasswordProtected ? password : "" }),
       });
 
       if (!response.ok) {
