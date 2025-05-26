@@ -94,19 +94,19 @@ export function AccessibilityPanel() {
   return (
     <div 
       ref={panelRef} 
-      className="fixed top-16 right-4 z-50 w-64 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-app"
+      className="fixed top-16 right-4 z-50 w-64 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-300 dark:border-gray-600"
       onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="accessibility-title"
     >
       <div className="flex justify-between items-center mb-3">
-        <h2 id="accessibility-title" className="text-lg font-semibold">
+        <h2 id="accessibility-title" className="text-lg font-semibold text-gray-900 dark:text-white">
           {t("common.accessibilitySettings")}
         </h2>
         <button 
           onClick={closePanel}
-          className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
           aria-label={t("common.close")}
         >
           ✕
@@ -114,7 +114,7 @@ export function AccessibilityPanel() {
       </div>
       
       <div className="mb-3">
-        <Label htmlFor="font-size-select" className="block mb-1 text-sm font-medium">
+        <Label htmlFor="font-size-select" className="block mb-1 text-sm font-medium text-gray-800 dark:text-gray-200">
           {t("accessibility.fontSize")}
         </Label>
         <Select
@@ -134,7 +134,7 @@ export function AccessibilityPanel() {
       </div>
       
       <div className="mb-3">
-        <Label htmlFor="line-spacing-select" className="block mb-1 text-sm font-medium">
+        <Label htmlFor="line-spacing-select" className="block mb-1 text-sm font-medium text-gray-800 dark:text-gray-200">
           {t("accessibility.lineSpacing")}
         </Label>
         <Select
@@ -153,7 +153,7 @@ export function AccessibilityPanel() {
       </div>
       
       <div className="mb-3">
-        <Label htmlFor="word-spacing-select" className="block mb-1 text-sm font-medium">
+        <Label htmlFor="word-spacing-select" className="block mb-1 text-sm font-medium text-gray-800 dark:text-gray-200">
           {t("accessibility.wordSpacing")}
         </Label>
         <Select
@@ -172,7 +172,7 @@ export function AccessibilityPanel() {
       </div>
       
       <div className="flex items-center mb-3">
-        <Label htmlFor="black-white-switch" className="text-sm font-medium mr-2">
+        <Label htmlFor="black-white-switch" className="text-sm font-medium mr-2 text-gray-800 dark:text-gray-200">
           {t("accessibility.blackWhiteMode")}
         </Label>
         <div className="relative inline-block w-12 mr-2 align-middle select-none">
@@ -185,7 +185,7 @@ export function AccessibilityPanel() {
       </div>
       
       <div className="flex items-center">
-        <Label htmlFor="language-switch" className="text-sm font-medium mr-2">
+        <Label htmlFor="language-switch" className="text-sm font-medium mr-2 text-gray-800 dark:text-gray-200">
           {t("accessibility.language")}: {locale === 'ru' ? t("accessibility.russian") : ''}
         </Label>
         <div className="relative inline-block w-12 mr-2 align-middle select-none">
