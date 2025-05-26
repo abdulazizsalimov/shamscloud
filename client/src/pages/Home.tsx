@@ -30,14 +30,30 @@ export default function Home() {
       return;
     }
     
+    // Если пользователь еще не загружен (первый рендер), ждем немного
+    if (user === undefined) {
+      // Даем время на загрузку пользователя
+      setTimeout(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const editParam = urlParams.get('edit') === 'true';
+        if (editParam && !user) {
+          // Если через секунду пользователь все еще не загружен, удаляем параметр
+          const url = new URL(window.location.href);
+          url.searchParams.delete('edit');
+          window.history.replaceState({}, '', url.toString());
+        }
+      }, 2000); // Ждем 2 секунды
+      return;
+    }
+    
     // Проверяем права администратора
     const isAdmin = user?.role === 'admin';
     
     // Режим редактирования доступен только администраторам
     if (user && isAdmin) {
       setIsEditMode(true);
-    } else {
-      // Если пользователь не админ или не авторизован, убираем параметр из URL
+    } else if (user && !isAdmin) {
+      // Если пользователь не админ, убираем параметр из URL
       setIsEditMode(false);
       const url = new URL(window.location.href);
       url.searchParams.delete('edit');
