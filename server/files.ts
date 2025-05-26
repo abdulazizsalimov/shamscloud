@@ -183,8 +183,10 @@ export function setupFiles(app: Express, storageService: IStorage) {
 
   // Upload files
   app.post("/api/files/upload", authGuard, upload.array("files"), async (req: Request, res: Response) => {
+    console.log("=== UPLOAD STARTED ===");
     try {
       if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        console.log("No files uploaded");
         return res.status(400).json({ message: "No files uploaded" });
       }
       
