@@ -229,7 +229,12 @@ export const translations = {
       usedSpace: "Использованное место",
       settingsSaved: "Настройки сохранены",
       settingsSavedMessage: "Настройки системы успешно обновлены.",
-      settingsSaveError: "Ошибка при сохранении настроек. Пожалуйста, попробуйте еще раз."
+      settingsSaveError: "Ошибка при сохранении настроек. Пожалуйста, попробуйте еще раз.",
+      multilingualSettings: "Многоязычность",
+      availableLanguages: "Доступные языки",
+      addTranslation: "Добавить перевод",
+      editTranslation: "Редактировать перевод",
+      multilingualDescription: "Управляйте переводами интерфейса для поддержки нескольких языков. Вы можете редактировать существующие переводы или добавить новые языки."
     },
     footer: {
       copyright: "© 2023 ShamsCloud. Все права защищены.",

@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { Edit, Plus, Globe } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface SettingsModalProps {
@@ -225,7 +226,18 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 >
                   {t("admin.quotaSettings")}
                 </TabsTrigger>
-                {/* Future tab options could be added here */}
+                <TabsTrigger
+                  value="multilingual"
+                  onClick={() => setActiveTab("multilingual")}
+                  className={`justify-start px-4 py-2 mb-1 text-left ${
+                    activeTab === "multilingual" 
+                      ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" 
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  <Globe className="h-4 w-4 mr-2" />
+                  {t("admin.multilingualSettings")}
+                </TabsTrigger>
               </TabsList>
             </div>
             
@@ -301,6 +313,82 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     </div>
                   </form>
                 </Form>
+              </TabsContent>
+
+              <TabsContent value="multilingual" className="m-0">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t("admin.availableLanguages")}</h3>
+                    <Button 
+                      onClick={() => {
+                        // TODO: Add functionality for adding new translation
+                        console.log("Add translation clicked");
+                      }}
+                      className="bg-primary hover:bg-primary/90 text-white"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t("admin.addTranslation")}
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {/* Russian Language */}
+                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white text-sm font-medium">
+                          RU
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Русский</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Russian</div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          // TODO: Add functionality for editing Russian translation
+                          console.log("Edit Russian translation clicked");
+                        }}
+                        aria-label={t("admin.editTranslation")}
+                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {/* English Language */}
+                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                          EN
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">English</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">English</div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          // TODO: Add functionality for editing English translation
+                          console.log("Edit English translation clicked");
+                        }}
+                        aria-label={t("admin.editTranslation")}
+                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      {t("admin.multilingualDescription")}
+                    </p>
+                  </div>
+                </div>
               </TabsContent>
             </div>
           </Tabs>
