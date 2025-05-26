@@ -253,9 +253,16 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     const urls = {
       home: '/?edit=true',
       about: '/about?edit=true',
-      contacts: '/contact?edit=true'  // Исправляем URL с /contacts на /contact
+      contacts: '/contact?edit=true'
     };
-    window.open(urls[pageType], '_blank');
+    
+    // Пытаемся открыть в новой вкладке
+    const newWindow = window.open(urls[pageType], '_blank');
+    
+    // Если браузер заблокировал всплывающее окно, перенаправляем в текущей вкладке
+    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+      window.location.href = urls[pageType];
+    }
   };
 
   // Handle language deletion
