@@ -329,6 +329,69 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
     }
   });
 
+  // Получение содержимого вложенной папки для browsing
+  app.post("/api/public/browse/:token/:folderId", async (req: Request, res: Response) => {
+    try {
+      const { token, folderId } = req.params;
+      const { password } = req.body;
+      
+      console.log('Browse subfolder API endpoint hit with token:', token, 'folderId:', folderId);
+      
+      // Получаем основную папку по токену
+      const mainFolder = await storage.getFileByPublicToken(token);
+      if (!mainFolder || !mainFolder.isPublic || mainFolder.shareType !== "browse" || !mainFolder.isFolder) {
+        return res.status(404).json({ message: "Folder not found or not accessible" });
+      }
+
+      // Проверяем пароль основной папки
+      if (mainFolder.isPasswordProtected && mainFolder.sharePassword) {
+        if (!password) {
+          return res.status(400).json({ message: "Password required" });
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password, mainFolder.sharePassword);
+        if (!isPasswordValid) {
+          return res.status(401).json({ message: "Invalid password" });
+        }
+      }
+
+      // Получаем вложенную папку
+      const targetFolder = await storage.getFile(parseInt(folderId));
+      if (!targetFolder || !targetFolder.isFolder) {
+        return res.status(404).json({ message: "Subfolder not found" });
+      }
+
+      // Проверяем, что вложенная папка принадлежит основной папке или её подпапкам
+      const hierarchy = await storage.getFileHierarchy(targetFolder.id);
+      const isInMainFolder = hierarchy.some(f => f.id === mainFolder.id);
+      
+      if (!isInMainFolder) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Получаем содержимое вложенной папки
+      const folderContents = await storage.getFilesByParentId(targetFolder.id, mainFolder.userId);
+      
+      const transformedFiles = folderContents.map(file => ({
+        id: file.id,
+        name: file.name,
+        isFolder: file.isFolder,
+        size: file.isFolder ? "" : file.size,
+        type: file.isFolder ? "folder" : file.type,
+      }));
+
+      res.json({
+        name: targetFolder.name,
+        files: transformedFiles,
+        isPasswordProtected: mainFolder.isPasswordProtected,
+        parentId: targetFolder.parentId,
+      });
+    } catch (error) {
+      console.error("Error browsing subfolder:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Скачивание отдельного файла из browsed папки
   app.post("/api/public/download-file/:token/:fileId", async (req: Request, res: Response) => {
     try {

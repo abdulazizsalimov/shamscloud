@@ -18,6 +18,8 @@ interface FolderData {
   name: string;
   files: FileItem[];
   isPasswordProtected: boolean;
+  currentPath?: string;
+  parentId?: number | null;
 }
 
 function BrowseFolder() {
@@ -28,6 +30,7 @@ function BrowseFolder() {
   const [folderData, setFolderData] = useState<FolderData | null>(null);
   const [password, setPassword] = useState("");
   const [validPassword, setValidPassword] = useState(""); // Сохраняем валидный пароль
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null); // Текущая папка для навигации
   const [isLoading, setIsLoading] = useState(true);
   const [isPasswordRequired, setIsPasswordRequired] = useState(false);
   const [error, setError] = useState("");
@@ -96,6 +99,43 @@ function BrowseFolder() {
         description: err instanceof Error ? err.message : "Неверный пароль",
         variant: "destructive",
       });
+    }
+  };
+
+  const navigateToFolder = async (folderId: number) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/public/browse/${token}/${folderId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password: validPassword }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Ошибка доступа к папке");
+      }
+
+      const data = await response.json();
+      setFolderData(data);
+      setCurrentFolderId(folderId);
+    } catch (err) {
+      toast({
+        title: "Ошибка",
+        description: err instanceof Error ? err.message : "Не удалось открыть папку",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const navigateBack = () => {
+    if (currentFolderId) {
+      // Если мы находимся во вложенной папке, вернуться к корневой папке
+      setCurrentFolderId(null);
+      loadFolderData();
     }
   };
 
@@ -210,12 +250,20 @@ function BrowseFolder() {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Folder className="h-6 w-6 text-blue-600" />
-              {folderData?.name || "Общая папка"}
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Folder className="h-6 w-6 text-blue-600" />
+                {folderData?.name || "Общая папка"}
+              </CardTitle>
+              {currentFolderId && (
+                <Button variant="outline" onClick={navigateBack} className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Назад
+                </Button>
+              )}
+            </div>
             <p className="text-gray-600 dark:text-gray-300">
-              Нажмите на файл, чтобы скачать его
+              Нажмите на файл, чтобы скачать его, или на папку, чтобы открыть её
             </p>
           </CardHeader>
           <CardContent>
@@ -225,7 +273,7 @@ function BrowseFolder() {
                   <div
                     key={file.id}
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-                    onClick={() => !file.isFolder && handleFileDownload(file.id, file.name)}
+                    onClick={() => file.isFolder ? navigateToFolder(file.id) : handleFileDownload(file.id, file.name)}
                   >
                     <div className="flex items-center gap-3">
                       {file.isFolder ? (
