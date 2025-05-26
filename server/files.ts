@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import { existsSync } from "fs";
 import multer from "multer";
+import bcryptjs from "bcryptjs";
 import { IStorage } from "./storage";
 import { createFolderSchema, updateFileSchema } from "@shared/schema";
 import { ZodError } from "zod";
@@ -484,8 +485,7 @@ export function setupFiles(app: Express, storageService: IStorage) {
       // Хешируем пароль, если защита паролем включена
       let hashedPassword = null;
       if (isPasswordProtected && password) {
-        const bcryptjs = await import('bcryptjs');
-        hashedPassword = await bcryptjs.default.hash(password, 10);
+        hashedPassword = await bcryptjs.hash(password, 10);
       }
       
       const updatedFile = await storageService.updateFile(fileId, {
