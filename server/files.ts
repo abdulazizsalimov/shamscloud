@@ -481,12 +481,19 @@ export function setupFiles(app: Express, storageService: IStorage) {
       // Генерируем уникальный токен
       const publicToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       
+      // Хешируем пароль, если защита паролем включена
+      let hashedPassword = null;
+      if (isPasswordProtected && password) {
+        const bcrypt = require('bcryptjs');
+        hashedPassword = await bcrypt.hash(password, 10);
+      }
+      
       const updatedFile = await storageService.updateFile(fileId, {
         isPublic: true,
         publicToken,
         shareType,
         isPasswordProtected: isPasswordProtected || false,
-        sharePassword: isPasswordProtected ? password : null
+        sharePassword: hashedPassword
       });
       
       res.json({ 
