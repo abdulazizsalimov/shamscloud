@@ -20,13 +20,12 @@ import { Separator } from "@/components/ui/separator";
 import { GoogleAuthButton } from "./GoogleAuthButton";
 
 interface LoginFormProps {
-  onShowRegister: () => void;
   onShowReset: () => void;
 }
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export function LoginForm({ onShowRegister, onShowReset }: LoginFormProps) {
+export function LoginForm({ onShowReset }: LoginFormProps) {
   const { login } = useAuth();
   const { t } = useLocale();
   const [isLoading, setIsLoading] = useState(false);
@@ -141,20 +140,6 @@ export function LoginForm({ onShowRegister, onShowReset }: LoginFormProps) {
         </div>
         
         <GoogleAuthButton />
-        
-        <div className="text-center mt-4">
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            {t("auth.backToLogin")}
-          </span>
-          <Button 
-            type="button" 
-            variant="link" 
-            onClick={onShowRegister}
-            className="p-0 ml-1 h-auto text-sm text-primary hover:underline"
-          >
-            {t("auth.register")}
-          </Button>
-        </div>
       </form>
     </Form>
   );
