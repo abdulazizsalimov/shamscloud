@@ -110,8 +110,7 @@ export function setupPublicFiles(app: Express, storage: IStorage) {
       const { token } = req.params;
       
       // Находим файл по токену
-      const files = await storage.searchFiles(0, token);
-      const file = files.find(f => f.publicToken === token && f.isPublic);
+      const file = await storage.getFileByPublicToken(token);
       
       if (!file) {
         return res.status(404).json({ message: "File not found or not public" });
