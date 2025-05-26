@@ -263,15 +263,21 @@ header .button-icon {
 }
 
 .dark header button {
-  color: hsl(210 40% 98%);
+  color: hsl(210 40% 98%) !important;
 }
 
 .dark header button[data-variant="ghost"] {
-  color: hsl(210 40% 98%); /* Light text for ghost buttons on dark theme */
+  color: hsl(210 40% 98%) !important; /* Light text for ghost buttons on dark theme */
+  border: 1px solid hsl(217 32.6% 30%) !important;
 }
 
 .dark header button[data-variant="ghost"]:hover {
-  background-color: hsla(217, 33%, 25%, 0.8);
+  background-color: hsla(217, 33%, 25%, 0.8) !important;
+  border-color: hsl(217 32.6% 40%) !important;
+}
+
+.dark header button svg {
+  color: hsl(210 40% 98%) !important;
 }
 
 .dark header {
