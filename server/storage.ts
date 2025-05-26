@@ -24,6 +24,7 @@ export interface IStorage {
   getFile(id: number): Promise<File | undefined>;
   getFilesByParentId(parentId: number | null, userId: number): Promise<File[]>;
   searchFiles(userId: number, query: string, parentId?: number | null): Promise<File[]>;
+  getFileByPublicToken(token: string): Promise<File | undefined>;
   createFile(file: InsertFile): Promise<File>;
   createFolder(name: string, parentId: number | null, userId: number): Promise<File>;
   updateFile(id: number, data: Partial<File>): Promise<File | undefined>;
@@ -247,6 +248,11 @@ export class MemStorage implements IStorage {
       
       return nameMatch && userMatch;
     });
+  }
+
+  async getFileByPublicToken(token: string): Promise<File | undefined> {
+    const files = Array.from(this.files.values());
+    return files.find(f => f.publicToken === token && f.isPublic);
   }
   
   async createFile(fileData: InsertFile): Promise<File> {
