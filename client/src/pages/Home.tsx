@@ -67,6 +67,15 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Header />
       
+      {/* Отладочная информация для проверки режима редактирования */}
+      {window.location.search.includes('edit=true') && (
+        <div className="bg-red-100 dark:bg-red-900 p-2 text-center text-sm">
+          <p>Режим редактирования: {isEditMode ? '✅ ВКЛ' : '❌ ВЫКЛ'}</p>
+          <p>Пользователь: {user ? `${user.name} (${user.role})` : 'Не загружен'}</p>
+          <p>URL параметр edit: {window.location.search.includes('edit=true') ? 'Есть' : 'Нет'}</p>
+        </div>
+      )}
+      
       <EditableContent
         isEditMode={isEditMode}
         onSave={handleSave}
