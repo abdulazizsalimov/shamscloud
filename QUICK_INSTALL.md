@@ -27,7 +27,8 @@ sudo ./auto-install.sh
 ## После установки
 
 **Приложение доступно:**
-- `http://localhost` (через Nginx)
+- `https://shamscloud.uz` (основной домен с SSL)
+- `http://shamscloud.uz` (резервный HTTP)
 - `http://localhost:5000` (прямое подключение)
 
 **Готовые аккаунты:**

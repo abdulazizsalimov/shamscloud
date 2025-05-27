@@ -586,8 +586,9 @@ log ""
 log "🎉🎉🎉 ShamsCloud успешно установлен! 🎉🎉🎉"
 log ""
 log "📍 Адреса доступа:"
-log "   http://localhost        (через Nginx)"
-log "   http://localhost:5000   (прямое подключение)"
+log "   https://$AUTO_DOMAIN      (основной домен с SSL)"
+log "   http://$AUTO_DOMAIN       (резервный HTTP)"
+log "   http://localhost:5000     (прямое подключение)"
 log ""
 log "👤 Учетные данные:"
 log "   Администратор: $AUTO_ADMIN_EMAIL / ShamsAdmin2024!"
@@ -617,13 +618,25 @@ cat > "$HOME/shamscloud-credentials.txt" << EOF
 ShamsCloud - Данные для входа
 =============================
 
-Приложение: http://localhost/
-Администратор: $AUTO_ADMIN_EMAIL / ShamsAdmin2024!
-Пользователь: $AUTO_DEMO_EMAIL / ShamsDemo2024!
+🌐 Основной сайт: https://shamscloud.uz/
+🔗 Резервный доступ: http://shamscloud.uz/
+🛠️ Прямое подключение: http://localhost:5000/
 
-База данных: shamscloud / $AUTO_DB_PASSWORD
+👤 Администратор: $AUTO_ADMIN_EMAIL / ShamsAdmin2024!
+👤 Пользователь: $AUTO_DEMO_EMAIL / ShamsDemo2024!
 
-Установлено: $(date)
+🗄️ База данных: shamscloud / $AUTO_DB_PASSWORD
+
+📅 Установлено: $(date)
+🏠 Директория: $AUTO_PROJECT_DIR
+
+🔧 Управление:
+sudo systemctl status shamscloud    # Статус
+sudo systemctl restart shamscloud   # Перезапуск  
+sudo journalctl -u shamscloud -f    # Логи
+
+📜 SSL сертификат: Let's Encrypt (автообновление)
+🔒 Безопасность: HTTPS принудительно включен
 EOF
 
 log "💾 Данные для входа сохранены в $HOME/shamscloud-credentials.txt"
