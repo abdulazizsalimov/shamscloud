@@ -319,49 +319,123 @@ if ! is_step_completed "db_init"; then
     mark_step_completed "db_init"
 fi
 
-# ==================== ШАГ 12: СОЗДАНИЕ ПОЛЬЗОВАТЕЛЕЙ ====================
+# ==================== ШАГ 12: СОЗДАНИЕ ПОЛЬЗОВАТЕЛЕЙ И ДЕМО ДАННЫХ ====================
 if ! is_step_completed "users_create"; then
-    log "👥 Шаг 12: Создание тестовых пользователей"
+    log "👥 Шаг 12: Создание пользователей и демо данных (точно как в текущем проекте)"
     
-    # Создаем SQL файл с пользователями
-    cat > /tmp/create_users.sql << EOF
--- Создание администратора
-INSERT INTO users (email, name, password, role, quota, used_space, is_blocked, is_email_verified, created_at)
-VALUES (
-    '$AUTO_ADMIN_EMAIL',
-    'Системный Администратор',
-    '\$2b\$10\$HwzHHQlNXQNOjQNKj3s9wOLXz8qNvxjKwq1p/JvYAh.Q5s6DPOG8e',
-    'admin',
-    '107374182400',
-    '0',
-    false,
-    true,
-    NOW()
-) ON CONFLICT (email) DO NOTHING;
+    cd "$AUTO_PROJECT_DIR"
+    
+    # Используем существующий механизм создания пользователей через Node.js скрипт
+    cat > /tmp/setup_users.js << 'EOF'
+import bcrypt from 'bcryptjs';
+import { db } from './server/db.js';
+import { users, files } from './shared/schema.js';
+import fs from 'fs';
+import path from 'path';
 
--- Создание демо пользователя
-INSERT INTO users (email, name, password, role, quota, used_space, is_blocked, is_email_verified, created_at)
-VALUES (
-    '$AUTO_DEMO_EMAIL',
-    'Демо Пользователь',
-    '\$2b\$10\$HwzHHQlNXQNOjQNKj3s9wOLXz8qNvxjKwq1p/JvYAh.Q5s6DPOG8e',
-    'user',
-    '5368709120',
-    '0',
-    false,
-    true,
-    NOW()
-) ON CONFLICT (email) DO NOTHING;
+async function setupUsers() {
+  try {
+    console.log('Создание пользователей по умолчанию...');
+    
+    // Хешируем пароли (точно как в текущем проекте)
+    const adminPassword = await bcrypt.hash('ShamsAdmin2024!', 10);
+    const demoPassword = await bcrypt.hash('ShamsDemo2024!', 10);
+    
+    // Создаем администратора
+    const [admin] = await db.insert(users).values({
+      email: 'admin@shamscloud.uz',
+      name: 'Системный Администратор',
+      password: adminPassword,
+      role: 'admin',
+      quota: '107374182400', // 100GB
+      usedSpace: '0',
+      isBlocked: false,
+      isEmailVerified: true
+    }).returning();
+    
+    // Создаем демо пользователя  
+    const [demo] = await db.insert(users).values({
+      email: 'demo@shamscloud.uz',
+      name: 'Демо Пользователь',
+      password: demoPassword,
+      role: 'user',
+      quota: '5368709120', // 5GB
+      usedSpace: '0',
+      isBlocked: false,
+      isEmailVerified: true
+    }).returning();
+    
+    // Создаем директории для файлов
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    const adminDir = path.join(uploadsDir, admin.id.toString());
+    const demoDir = path.join(uploadsDir, demo.id.toString());
+    
+    if (!fs.existsSync(adminDir)) {
+      fs.mkdirSync(adminDir, { recursive: true });
+    }
+    
+    if (!fs.existsSync(demoDir)) {
+      fs.mkdirSync(demoDir, { recursive: true });
+    }
+    
+    // Создаем демо папки для демо пользователя (как в текущем проекте)
+    const [documentsFolder] = await db.insert(files).values({
+      name: 'Documents',
+      path: '',
+      type: 'folder',
+      size: '0',
+      isFolder: true,
+      parentId: null,
+      userId: demo.id,
+      isPublic: false,
+      publicToken: null,
+      shareType: null,
+      isPasswordProtected: false,
+      sharePassword: null
+    }).returning();
+    
+    const [photosFolder] = await db.insert(files).values({
+      name: 'Photos',
+      path: '',
+      type: 'folder', 
+      size: '0',
+      isFolder: true,
+      parentId: null,
+      userId: demo.id,
+      isPublic: false,
+      publicToken: null,
+      shareType: null,
+      isPasswordProtected: false,
+      sharePassword: null
+    }).returning();
+    
+    console.log('✅ Пользователи и демо данные созданы успешно!');
+    console.log(`👤 Администратор: admin@shamscloud.uz / ShamsAdmin2024!`);
+    console.log(`👤 Пользователь: demo@shamscloud.uz / ShamsDemo2024!`);
+    
+  } catch (error) {
+    console.error('Ошибка при создании пользователей:', error);
+    process.exit(1);
+  }
+  
+  process.exit(0);
+}
+
+setupUsers();
 EOF
     
-    # Выполняем SQL
-    PGPASSWORD="$AUTO_DB_PASSWORD" psql -h localhost -U shamscloud -d shamscloud -f /tmp/create_users.sql
+    # Запускаем скрипт создания пользователей
+    node /tmp/setup_users.js
     
-    log "✅ Тестовые пользователи созданы"
+    log "✅ Пользователи и демо данные созданы (идентично текущему проекту)"
     log "👤 Администратор: $AUTO_ADMIN_EMAIL / ShamsAdmin2024!"
     log "👤 Пользователь: $AUTO_DEMO_EMAIL / ShamsDemo2024!"
     
-    rm -f /tmp/create_users.sql
+    rm -f /tmp/setup_users.js
     mark_step_completed "users_create"
 fi
 
