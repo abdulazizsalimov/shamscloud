@@ -26,14 +26,14 @@ fi
 
 # Останавливаем предыдущие контейнеры
 echo "🔄 Останавливаем предыдущие контейнеры..."
-docker-compose down
+docker-compose -f docker-compose.simple.yml down
 
 # Собираем и запускаем контейнеры
 echo "🏗️  Собираем Docker образы..."
-docker-compose build --no-cache
+docker-compose -f docker-compose.simple.yml build --no-cache
 
 echo "🚀 Запускаем сервисы..."
-docker-compose up -d
+docker-compose -f docker-compose.simple.yml up -d
 
 # Ждём запуска базы данных
 echo "⏳ Ожидаем запуска базы данных..."
@@ -41,7 +41,7 @@ sleep 10
 
 # Применяем схему базы данных
 echo "📋 Инициализируем базу данных..."
-docker-compose exec shamscloud npm run db:push
+docker-compose -f docker-compose.simple.yml exec shamscloud npm run db:push
 
 echo ""
 echo "🎉 ShamsCloud успешно запущен!"
