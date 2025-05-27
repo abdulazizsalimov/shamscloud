@@ -325,8 +325,14 @@ if ! is_step_completed "users_create"; then
     
     cd "$AUTO_PROJECT_DIR"
     
-    # Используем существующий механизм создания пользователей через Node.js скрипт
-    cat > /tmp/setup_users.js << 'EOF'
+    # Сначала устанавливаем зависимости, если их нет
+    if [ ! -d "node_modules" ]; then
+        log "📦 Устанавливаем зависимости Node.js..."
+        npm install
+    fi
+    
+    # Создаем скрипт в директории проекта для правильного доступа к модулям
+    cat > setup_users.js << 'EOF'
 import bcrypt from 'bcryptjs';
 import { db } from './server/db.js';
 import { users, files } from './shared/schema.js';
@@ -428,14 +434,14 @@ async function setupUsers() {
 setupUsers();
 EOF
     
-    # Запускаем скрипт создания пользователей
-    node /tmp/setup_users.js
+    # Запускаем скрипт создания пользователей из директории проекта
+    node setup_users.js
     
     log "✅ Пользователи и демо данные созданы (идентично текущему проекту)"
-    log "👤 Администратор: $AUTO_ADMIN_EMAIL / ShamsAdmin2024!"
-    log "👤 Пользователь: $AUTO_DEMO_EMAIL / ShamsDemo2024!"
+    log "👤 Администратор: admin@shamscloud.uz / ShamsAdmin2024!"
+    log "👤 Пользователь: demo@shamscloud.uz / ShamsDemo2024!"
     
-    rm -f /tmp/setup_users.js
+    rm -f setup_users.js
     mark_step_completed "users_create"
 fi
 
