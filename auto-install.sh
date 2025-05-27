@@ -67,7 +67,7 @@ AUTO_ADMIN_EMAIL="admin@shamscloud.local"
 AUTO_ADMIN_PASSWORD="ShamsAdmin2024!"
 AUTO_DEMO_EMAIL="demo@shamscloud.local"
 AUTO_DEMO_PASSWORD="ShamsDemo2024!"
-AUTO_DOMAIN="localhost"
+AUTO_DOMAIN="shamscloud.uz"
 AUTO_PROJECT_DIR="$HOME/shamscloud"
 
 log "🌟 Начинаем автоматическую установку ShamsCloud"
@@ -197,9 +197,11 @@ if ! is_step_completed "nginx_install"; then
     sudo systemctl start nginx
     sudo systemctl enable nginx
     
-    # Настройка firewall
+    # Настройка firewall для домена
     sudo ufw allow 'Nginx Full' 2>/dev/null || true
     sudo ufw allow ssh 2>/dev/null || true
+    sudo ufw allow 80/tcp 2>/dev/null || true
+    sudo ufw allow 443/tcp 2>/dev/null || true
     
     log "✅ Nginx установлен и запущен"
     mark_step_completed "nginx_install"
@@ -399,23 +401,40 @@ fi
 
 # ==================== ШАГ 14: НАСТРОЙКА NGINX ====================
 if ! is_step_completed "nginx_config"; then
-    log "🌐 Шаг 14: Настройка Nginx"
+    log "🌐 Шаг 14: Настройка Nginx для домена $AUTO_DOMAIN"
     
     # Создаем конфигурацию сайта
     sudo tee /etc/nginx/sites-available/shamscloud > /dev/null << EOF
 server {
     listen 80;
-    server_name $AUTO_DOMAIN;
+    server_name $AUTO_DOMAIN www.$AUTO_DOMAIN;
+    
+    # Перенаправляем на HTTPS (после установки SSL)
+    return 301 https://\$server_name\$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name $AUTO_DOMAIN www.$AUTO_DOMAIN;
+    
+    # SSL настройки (будут обновлены после установки Certbot)
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
     
     # Безопасность
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     
     # Лимит размера загружаемых файлов
     client_max_body_size 100M;
     
+    # Основное приложение
     location / {
         proxy_pass http://localhost:5000;
         proxy_http_version 1.1;
@@ -428,8 +447,23 @@ server {
         proxy_cache_bypass \$http_upgrade;
         proxy_read_timeout 86400;
     }
+    
+    # Статические файлы с кешированием
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host \$host;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
 }
 EOF
+    
+    # Создаем временный самоподписанный сертификат
+    sudo mkdir -p /etc/ssl/private
+    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout /etc/ssl/private/nginx-selfsigned.key \
+        -out /etc/ssl/certs/nginx-selfsigned.crt \
+        -subj "/C=UZ/ST=Tashkent/L=Tashkent/O=ShamsCloud/CN=$AUTO_DOMAIN"
     
     # Активируем сайт
     sudo ln -sf /etc/nginx/sites-available/shamscloud /etc/nginx/sites-enabled/
@@ -439,11 +473,70 @@ EOF
     sudo nginx -t
     sudo systemctl restart nginx
     
-    log "✅ Nginx настроен"
+    log "✅ Nginx настроен для домена $AUTO_DOMAIN"
     mark_step_completed "nginx_config"
 fi
 
-# ==================== ШАГ 15: ПРОВЕРКА РАБОТЫ ====================
+# ==================== ШАГ 15: УСТАНОВКА SSL СЕРТИФИКАТА ====================
+if ! is_step_completed "ssl_setup"; then
+    log "🔒 Шаг 15: Установка SSL сертификата для $AUTO_DOMAIN"
+    
+    # Устанавливаем Certbot
+    sudo apt-get install -y certbot python3-certbot-nginx
+    
+    # Проверяем, что домен указывает на этот сервер
+    log "🔍 Проверяем DNS настройки для $AUTO_DOMAIN..."
+    
+    # Временно настраиваем HTTP для прохождения проверки
+    sudo tee /etc/nginx/sites-available/shamscloud-temp > /dev/null << EOF
+server {
+    listen 80;
+    server_name $AUTO_DOMAIN www.$AUTO_DOMAIN;
+    
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+    
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+    
+    sudo ln -sf /etc/nginx/sites-available/shamscloud-temp /etc/nginx/sites-enabled/shamscloud
+    sudo nginx -t && sudo systemctl reload nginx
+    
+    # Создаем директорию для ACME challenge
+    sudo mkdir -p /var/www/html/.well-known/acme-challenge
+    
+    # Получаем SSL сертификат
+    log "📜 Получаем SSL сертификат от Let's Encrypt..."
+    if sudo certbot --nginx -d $AUTO_DOMAIN -d www.$AUTO_DOMAIN --non-interactive --agree-tos --email admin@$AUTO_DOMAIN --redirect; then
+        log "✅ SSL сертификат успешно установлен"
+        
+        # Настраиваем автоматическое обновление сертификата
+        echo "0 12 * * * /usr/bin/certbot renew --quiet" | sudo crontab -
+        
+    else
+        warn "⚠️ Не удалось получить SSL сертификат от Let's Encrypt"
+        warn "Возможные причины:"
+        warn "- Домен $AUTO_DOMAIN не указывает на этот сервер"
+        warn "- Порты 80 и 443 заблокированы firewall"
+        warn "- Проблемы с DNS"
+        
+        log "🔄 Восстанавливаем конфигурацию с самоподписанным сертификатом"
+        sudo ln -sf /etc/nginx/sites-available/shamscloud /etc/nginx/sites-enabled/shamscloud
+        sudo nginx -t && sudo systemctl reload nginx
+    fi
+    
+    mark_step_completed "ssl_setup"
+fi
+
+# ==================== ШАГ 16: ПРОВЕРКА РАБОТЫ ====================
 if ! is_step_completed "final_check"; then
     log "🔍 Шаг 15: Финальная проверка"
     
@@ -477,10 +570,12 @@ if ! is_step_completed "final_check"; then
         sleep 10
     done
     
-    if curl -s http://localhost/ > /dev/null; then
-        log "✅ Приложение доступно через Nginx на http://localhost"
+    if curl -s -k https://$AUTO_DOMAIN/ > /dev/null; then
+        log "✅ Приложение доступно через Nginx на https://$AUTO_DOMAIN"
+    elif curl -s http://$AUTO_DOMAIN/ > /dev/null; then
+        log "✅ Приложение доступно через Nginx на http://$AUTO_DOMAIN"
     else
-        warn "⚠️ Проблемы с доступом через Nginx"
+        warn "⚠️ Проблемы с доступом через Nginx на домене $AUTO_DOMAIN"
     fi
     
     mark_step_completed "final_check"
