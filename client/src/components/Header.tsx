@@ -92,7 +92,7 @@ export function Header() {
               {navItems.map((item) => (
                 <Link key={item.path} href={item.path}>
                   <div 
-                    className={`px-3 py-2 rounded-md hover:bg-blue-50 hover:text-primary transition cursor-pointer ${
+                    className={`px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-blue-50 hover:text-primary dark:hover:bg-gray-700 transition cursor-pointer ${
                       isActive(item.path) ? "bg-blue-100 text-primary font-medium dark:bg-blue-800 dark:text-white" : ""
                     }`}
                     aria-current={isActive(item.path) ? "page" : undefined}
@@ -107,7 +107,7 @@ export function Header() {
                 <>
                   <Link href="/dashboard">
                     <div 
-                      className={`px-3 py-2 rounded-md hover:bg-blue-50 hover:text-primary transition cursor-pointer ${
+                      className={`px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-blue-50 hover:text-primary dark:hover:bg-gray-700 transition cursor-pointer ${
                         isActive("/dashboard") ? "bg-blue-100 text-primary font-medium dark:bg-blue-800 dark:text-white" : ""
                       }`}
                       aria-current={isActive("/dashboard") ? "page" : undefined}
