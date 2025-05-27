@@ -484,7 +484,23 @@ fi
 
 # ==================== ШАГ 14: НАСТРОЙКА NGINX ====================
 if ! is_step_completed "nginx_config"; then
-    log "🌐 Шаг 14: Настройка Nginx для домена $AUTO_DOMAIN"
+    log "🌐 Шаг 14: Проверка настройки Nginx для домена $AUTO_DOMAIN"
+    
+    # Проверяем, есть ли уже конфигурация для shamscloud.uz
+    if sudo nginx -T 2>/dev/null | grep -q "server_name.*shamscloud.uz"; then
+        log "✅ Nginx уже настроен для домена $AUTO_DOMAIN"
+        log "🔄 Пропускаем настройку Nginx (используем существующую конфигурацию)"
+        
+        # Проверяем, что Nginx работает
+        if ! systemctl is-active --quiet nginx; then
+            log "🔄 Запускаем Nginx..."
+            sudo systemctl start nginx
+            sudo systemctl enable nginx
+        fi
+        
+        mark_step_completed "nginx_config"
+    else
+        log "🌐 Настраиваем Nginx для домена $AUTO_DOMAIN"
     
     # Создаем конфигурацию сайта
     sudo tee /etc/nginx/sites-available/shamscloud > /dev/null << EOF
@@ -560,9 +576,17 @@ EOF
     mark_step_completed "nginx_config"
 fi
 
-# ==================== ШАГ 15: УСТАНОВКА SSL СЕРТИФИКАТА ====================
+# ==================== ШАГ 15: ПРОВЕРКА SSL СЕРТИФИКАТА ====================
 if ! is_step_completed "ssl_setup"; then
-    log "🔒 Шаг 15: Установка SSL сертификата для $AUTO_DOMAIN"
+    log "🔒 Шаг 15: Проверка SSL сертификата для $AUTO_DOMAIN"
+    
+    # Проверяем, есть ли уже SSL сертификат
+    if sudo nginx -T 2>/dev/null | grep -q "ssl_certificate.*$AUTO_DOMAIN\|ssl_certificate.*letsencrypt"; then
+        log "✅ SSL сертификат уже настроен для домена $AUTO_DOMAIN"
+        log "🔄 Пропускаем настройку SSL (используем существующий сертификат)"
+        mark_step_completed "ssl_setup"
+    else
+        log "🔒 Настраиваем SSL сертификат для $AUTO_DOMAIN"
     
     # Устанавливаем Certbot
     sudo apt-get install -y certbot python3-certbot-nginx
