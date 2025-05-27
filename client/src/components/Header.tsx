@@ -119,7 +119,7 @@ export function Header() {
                   {isAdmin && (
                     <Link href="/admin">
                       <div 
-                        className={`px-3 py-2 rounded-md hover:bg-blue-50 hover:text-primary transition cursor-pointer ${
+                        className={`px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-blue-50 hover:text-primary dark:hover:bg-gray-700 transition cursor-pointer ${
                           isActive("/admin") ? "bg-blue-100 text-primary font-medium dark:bg-blue-800 dark:text-white" : ""
                         }`}
                         aria-current={isActive("/admin") ? "page" : undefined}
