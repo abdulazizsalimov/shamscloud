@@ -331,117 +331,85 @@ if ! is_step_completed "users_create"; then
         npm install
     fi
     
-    # Создаем скрипт в директории проекта для правильного доступа к модулям
-    cat > setup_users.js << 'EOF'
-import bcrypt from 'bcryptjs';
-import { db } from './server/db.js';
-import { users, files } from './shared/schema.js';
-import fs from 'fs';
-import path from 'path';
+    # Используем существующий скрипт базы данных через npm run db:push и прямой SQL
+    log "📊 Создаем пользователей через SQL..."
+    
+    # Хешируем пароли с помощью Node.js
+    ADMIN_HASH=$(node -e "const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync('ShamsAdmin2024!', 10));")
+    DEMO_HASH=$(node -e "const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync('ShamsDemo2024!', 10));")
+    
+    # Создаем SQL файл с пользователями
+    cat > /tmp/create_users.sql << EOF
+-- Создание администратора
+INSERT INTO users (email, name, password, role, quota, used_space, is_blocked, is_email_verified, created_at)
+VALUES (
+    'admin@shamscloud.uz',
+    'Системный Администратор',
+    '$ADMIN_HASH',
+    'admin',
+    '107374182400',
+    '0',
+    false,
+    true,
+    NOW()
+) ON CONFLICT (email) DO NOTHING;
 
-async function setupUsers() {
-  try {
-    console.log('Создание пользователей по умолчанию...');
-    
-    // Хешируем пароли (точно как в текущем проекте)
-    const adminPassword = await bcrypt.hash('ShamsAdmin2024!', 10);
-    const demoPassword = await bcrypt.hash('ShamsDemo2024!', 10);
-    
-    // Создаем администратора
-    const [admin] = await db.insert(users).values({
-      email: 'admin@shamscloud.uz',
-      name: 'Системный Администратор',
-      password: adminPassword,
-      role: 'admin',
-      quota: '107374182400', // 100GB
-      usedSpace: '0',
-      isBlocked: false,
-      isEmailVerified: true
-    }).returning();
-    
-    // Создаем демо пользователя  
-    const [demo] = await db.insert(users).values({
-      email: 'demo@shamscloud.uz',
-      name: 'Демо Пользователь',
-      password: demoPassword,
-      role: 'user',
-      quota: '5368709120', // 5GB
-      usedSpace: '0',
-      isBlocked: false,
-      isEmailVerified: true
-    }).returning();
-    
-    // Создаем директории для файлов
-    const uploadsDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-    
-    const adminDir = path.join(uploadsDir, admin.id.toString());
-    const demoDir = path.join(uploadsDir, demo.id.toString());
-    
-    if (!fs.existsSync(adminDir)) {
-      fs.mkdirSync(adminDir, { recursive: true });
-    }
-    
-    if (!fs.existsSync(demoDir)) {
-      fs.mkdirSync(demoDir, { recursive: true });
-    }
-    
-    // Создаем демо папки для демо пользователя (как в текущем проекте)
-    const [documentsFolder] = await db.insert(files).values({
-      name: 'Documents',
-      path: '',
-      type: 'folder',
-      size: '0',
-      isFolder: true,
-      parentId: null,
-      userId: demo.id,
-      isPublic: false,
-      publicToken: null,
-      shareType: null,
-      isPasswordProtected: false,
-      sharePassword: null
-    }).returning();
-    
-    const [photosFolder] = await db.insert(files).values({
-      name: 'Photos',
-      path: '',
-      type: 'folder', 
-      size: '0',
-      isFolder: true,
-      parentId: null,
-      userId: demo.id,
-      isPublic: false,
-      publicToken: null,
-      shareType: null,
-      isPasswordProtected: false,
-      sharePassword: null
-    }).returning();
-    
-    console.log('✅ Пользователи и демо данные созданы успешно!');
-    console.log(`👤 Администратор: admin@shamscloud.uz / ShamsAdmin2024!`);
-    console.log(`👤 Пользователь: demo@shamscloud.uz / ShamsDemo2024!`);
-    
-  } catch (error) {
-    console.error('Ошибка при создании пользователей:', error);
-    process.exit(1);
-  }
-  
-  process.exit(0);
-}
+-- Создание демо пользователя
+INSERT INTO users (email, name, password, role, quota, used_space, is_blocked, is_email_verified, created_at)
+VALUES (
+    'demo@shamscloud.uz',
+    'Демо Пользователь',
+    '$DEMO_HASH',
+    'user',
+    '5368709120',
+    '0',
+    false,
+    true,
+    NOW()
+) ON CONFLICT (email) DO NOTHING;
 
-setupUsers();
+-- Получаем ID пользователей для создания папок
+DO \$\$
+DECLARE
+    demo_user_id INTEGER;
+BEGIN
+    SELECT id INTO demo_user_id FROM users WHERE email = 'demo@shamscloud.uz';
+    
+    IF demo_user_id IS NOT NULL THEN
+        -- Создаем демо папки
+        INSERT INTO files (name, path, type, size, is_folder, parent_id, user_id, is_public, public_token, share_type, is_password_protected, share_password, created_at, updated_at)
+        VALUES 
+            ('Documents', '', 'folder', '0', true, NULL, demo_user_id, false, NULL, NULL, false, NULL, NOW(), NOW()),
+            ('Photos', '', 'folder', '0', true, NULL, demo_user_id, false, NULL, NULL, false, NULL, NOW(), NOW())
+        ON CONFLICT DO NOTHING;
+    END IF;
+END \$\$;
 EOF
     
-    # Запускаем скрипт создания пользователей из директории проекта
-    node setup_users.js
+    # Выполняем SQL через переменные окружения
+    PGPASSWORD="$AUTO_DB_PASSWORD" psql -h localhost -U "$AUTO_DB_USER" -d "$AUTO_DB_NAME" -f /tmp/create_users.sql
+    
+    # Создаем директории для файлов
+    mkdir -p uploads
+    
+    # Получаем ID пользователей и создаем их директории
+    ADMIN_ID=$(PGPASSWORD="$AUTO_DB_PASSWORD" psql -h localhost -U "$AUTO_DB_USER" -d "$AUTO_DB_NAME" -t -c "SELECT id FROM users WHERE email = 'admin@shamscloud.uz';" | xargs)
+    DEMO_ID=$(PGPASSWORD="$AUTO_DB_PASSWORD" psql -h localhost -U "$AUTO_DB_USER" -d "$AUTO_DB_NAME" -t -c "SELECT id FROM users WHERE email = 'demo@shamscloud.uz';" | xargs)
+    
+    if [ ! -z "$ADMIN_ID" ]; then
+        mkdir -p "uploads/$ADMIN_ID"
+    fi
+    
+    if [ ! -z "$DEMO_ID" ]; then
+        mkdir -p "uploads/$DEMO_ID"
+    fi
+    
+    rm -f /tmp/create_users.sql
     
     log "✅ Пользователи и демо данные созданы (идентично текущему проекту)"
     log "👤 Администратор: admin@shamscloud.uz / ShamsAdmin2024!"
     log "👤 Пользователь: demo@shamscloud.uz / ShamsDemo2024!"
     
-    rm -f setup_users.js
     mark_step_completed "users_create"
 fi
 
