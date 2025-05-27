@@ -234,11 +234,11 @@ fi
 
 # ==================== ШАГ 8: НАСТРОЙКА ОКРУЖЕНИЯ ====================
 if ! is_step_completed "env_setup"; then
-    log "⚙️ Шаг 8: Настройка окружения"
+    log "⚙️ Шаг 8: Настройка окружения с реальными данными"
     
     cd "$AUTO_PROJECT_DIR"
     
-    # Создаем .env файл с реальными данными
+    # Создаем .env файл с реальными данными из текущего проекта
     cat > .env << EOF
 # База данных
 DATABASE_URL=postgresql://shamscloud:$AUTO_DB_PASSWORD@localhost:5432/shamscloud
@@ -251,10 +251,10 @@ PGDATABASE=shamscloud
 # Режим работы
 NODE_ENV=production
 
-# Firebase (можно добавить позже)
-# VITE_FIREBASE_API_KEY=
-# VITE_FIREBASE_PROJECT_ID=
-# VITE_FIREBASE_APP_ID=
+# Firebase (реальные данные из текущего проекта)
+VITE_FIREBASE_API_KEY=AIzaSyBLbCbNIoQKUHb0CJCKrP7rJY6rZ7Wrl9M
+VITE_FIREBASE_PROJECT_ID=shamscloud-402610
+VITE_FIREBASE_APP_ID=1:364765463851:web:ac4e95e7a2c0f1cfefd1b6
 
 # Безопасность
 SESSION_SECRET=ShamsCloud_Session_Secret_$(openssl rand -hex 32)
@@ -264,7 +264,16 @@ AUTO_INSTALL=true
 INSTALL_DATE=$(date)
 EOF
     
-    log "✅ Файл окружения создан"
+    log "✅ Файл окружения создан с реальными Firebase данными"
+    log "🔥 Google OAuth настроен для работы с shamscloud.uz"
+    log ""
+    log "📝 ВАЖНО: Добавьте домен shamscloud.uz в Firebase Console:"
+    log "   1. Откройте https://console.firebase.google.com/"
+    log "   2. Выберите проект shamscloud-402610"
+    log "   3. Перейдите в Authentication > Settings > Authorized domains"
+    log "   4. Добавьте: shamscloud.uz"
+    log "   5. Добавьте: www.shamscloud.uz"
+    log ""
     mark_step_completed "env_setup"
 fi
 
