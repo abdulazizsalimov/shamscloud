@@ -63,9 +63,9 @@ reset_install_state() {
 
 # Автоматические значения (из реального проекта)
 AUTO_DB_PASSWORD="ShamsCloud_Secure_2024_$(date +%s)"
-AUTO_ADMIN_EMAIL="admin@shamscloud.local"
+AUTO_ADMIN_EMAIL="admin@shamscloud.uz"
 AUTO_ADMIN_PASSWORD="ShamsAdmin2024!"
-AUTO_DEMO_EMAIL="demo@shamscloud.local"
+AUTO_DEMO_EMAIL="demo@shamscloud.uz"
 AUTO_DEMO_PASSWORD="ShamsDemo2024!"
 AUTO_DOMAIN="shamscloud.uz"
 AUTO_PROJECT_DIR="$HOME/shamscloud"
