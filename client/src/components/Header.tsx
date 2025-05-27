@@ -148,7 +148,7 @@ export function Header() {
                     <DropdownMenuItem 
                       key={language.code}
                       onClick={() => setLocale(language.code)}
-                      className={locale === language.code ? "bg-blue-50 dark:bg-blue-800 font-medium dark:text-white" : ""}
+                      className={locale === language.code ? "bg-blue-50 dark:bg-blue-800 font-medium text-blue-600 dark:text-white" : "text-gray-700 dark:text-gray-200"}
                     >
                       {language.name}
                     </DropdownMenuItem>
