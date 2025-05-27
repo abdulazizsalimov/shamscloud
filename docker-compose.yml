@@ -1,18 +1,20 @@
+# Docker Compose для ShamsCloud - полная копия текущего проекта
 version: '3.8'
 
 services:
-  # PostgreSQL база данных
+  # PostgreSQL база данных (точно как в текущем проекте)
   postgres:
     image: postgres:16-alpine
+    container_name: shamscloud-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: shamscloud
       POSTGRES_USER: shamscloud
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shamscloud_secret_2024}
+      POSTGRES_PASSWORD: shamscloud_secure_password_2024
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - postgres_data:/var/lib/postgresql/data/pgdata
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -20,44 +22,56 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - shamscloud-network
 
   # ShamsCloud приложение
   shamscloud:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: shamscloud-app
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://shamscloud:${POSTGRES_PASSWORD:-shamscloud_secret_2024}@postgres:5432/shamscloud
+      # Переменные базы данных (точно как в текущем проекте)
+      DATABASE_URL: postgresql://shamscloud:shamscloud_secure_password_2024@postgres:5432/shamscloud
       PGHOST: postgres
       PGPORT: 5432
       PGUSER: shamscloud
-      PGPASSWORD: ${POSTGRES_PASSWORD:-shamscloud_secret_2024}
+      PGPASSWORD: shamscloud_secure_password_2024
       PGDATABASE: shamscloud
-      # Firebase настройки (опционально)
-      VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY:-}
-      VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID:-}
-      VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID:-}
-    volumes:
-      - uploads_data:/app/uploads
+      
+      # Firebase конфигурация (точно из текущего проекта)
+      VITE_FIREBASE_API_KEY: AIzaSyBLbCbNIoQKUHb0CJCKrP7rJY6rZ7Wrl9M
+      VITE_FIREBASE_PROJECT_ID: shamscloud-402610
+      VITE_FIREBASE_APP_ID: 1:364765463851:web:ac4e95e7a2c0f1cfefd1b6
+      
+      # Настройки приложения
+      NODE_ENV: production
+      PORT: 5000
+      
+      # Настройки безопасности
+      SESSION_SECRET: shamscloud_super_secret_session_key_2024_production
+      
     ports:
       - "5000:5000"
+    volumes:
+      # Постоянное хранение файлов пользователей
+      - shamscloud_uploads:/app/uploads
+      - shamscloud_data:/app/data
+      - shamscloud_settings:/app/settings
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/auth/me"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
-    networks:
-      - shamscloud-network
+      start_period: 60s
 
-  # Nginx reverse proxy (опционально)
+  # Nginx прокси (опционально, для production)
   nginx:
     image: nginx:alpine
+    container_name: shamscloud-nginx
     restart: unless-stopped
     depends_on:
       - shamscloud
@@ -66,21 +80,23 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - nginx_logs:/var/log/nginx
-      - ssl_certs:/etc/ssl/certs
-    networks:
-      - shamscloud-network
+      - nginx_ssl:/etc/ssl
+    profiles:
+      - production
 
 volumes:
+  # Постоянные тома для данных
   postgres_data:
     driver: local
-  uploads_data:
+  shamscloud_uploads:
     driver: local
-  nginx_logs:
+  shamscloud_data:
+    driver: local  
+  shamscloud_settings:
     driver: local
-  ssl_certs:
+  nginx_ssl:
     driver: local
 
 networks:
-  shamscloud-network:
-    driver: bridge
+  default:
+    name: shamscloud-network
